@@ -29,8 +29,8 @@ function update(e){
     }
 }
 document.ontouchmove = document.onmousemove = update
-document.ontouchstart = document.onmousedown = function(){
-    getPos()
+document.ontouchstart = document.onmousedown = function(e){
+    getPos(e)
     c.moveTo(x,y)
     c.beginPath()
     md=true
