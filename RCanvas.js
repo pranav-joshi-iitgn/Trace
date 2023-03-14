@@ -1,17 +1,21 @@
 can = document.getElementById("C")
+Ex = document.getElementById("E")
+I = document.getElementById("I")
+L = document.getElementById("L")
+B = document.getElementById("B")  
+T = document.getElementById("T")
 rect = can.getBoundingClientRect()
-cW = 0.7
-cH = 0.7
-can.width  = cX = 7000
-can.height = cY = 7000
-can.style.width = `${cW*100}%`
-can.style.height = `${cH*100}%`
+cX = cY = 0
+cW = 0.5
+cH = 1
+tH = 0.8
+B.style.top = L.style.top = `${tH*100 + 2}%`
+T.style.top = `${tH*100 + 6}%`
+T.style.height = `${(1-tH)*100 -8}%`
+L.style.left = I.style.left = `${cW*100 + 2}%`
+T.style.width = I.style.width = `${(1-cW)*100 -3}%`
+I.style.height = `${tH*100}%`
 c = can.getContext("2d")
-c.strokeStyle = 'white'
-c.fillStyle = 'white'
-lw = 100
-c.lineWidth = lw
-L = document.getElementById("L")  
 x = 0
 y = 0 
 md = false
@@ -22,17 +26,34 @@ function getPos(e){
 }
 function update(e){
     getPos(e)
-    L.innerText = `(${x},${y})`
-    if(md){
-        c.lineTo(x,y)
-        c.stroke()
-    }
+    L.innerText = `(${Math.round(x)},${Math.round(y)})`
 }
-document.ontouchmove = document.onmousemove = update
-document.ontouchstart = document.onmousedown = function(e){
-    getPos(e)
-    c.moveTo(x,y)
-    c.beginPath()
-    md=true
+window.onmousemove=update
+function resize(){
+    cX = window.innerWidth*cW
+    cY = window.innerHeight*cH
+    c0 = c.getImageData(0,0,cX,cY)
+    Ex.width   = can.width  = cX
+    Ex.height  = can.height = cY
+    c.putImageData(c0,0,0)
 }
-document.ontouchend = document.onmouseup = function(){md=false}
+window.onresize=resize
+function draw(){
+    c.strokeStyle = 'red'
+    c.fillStyle = 'red'
+    c.lineWidth = 10
+    c.arc(50,50,40,0,7)
+    c.stroke()
+}
+function run(){
+    let s = I.value
+    eval(s);
+    console.log(s)
+}
+function print(t){
+    T.innerText = t
+}
+B.onclick = run
+c.fillRect(100,100,50,50,'black')
+resize()
+
