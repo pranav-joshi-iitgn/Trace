@@ -16,6 +16,7 @@ x = 0
 y = 0 
 md = false
 function update(e){
+    if(e.touches[0]!=undefined){e=e.touches[0]}
     x = (cX/cW) * (e.clientX - rect.left) / window.innerWidth
     y = (cY/cH) * (e.clientY - rect.top) / window.innerHeight
     L.innerText = `(${x},${y}) `
