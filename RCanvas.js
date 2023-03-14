@@ -15,11 +15,14 @@ L = document.getElementById("L")
 x = 0
 y = 0 
 md = false
-function update(e){
+function getPos(e){
     if(e.touches!=undefined){e=e.touches[0]}
     x = (cX/cW) * (e.clientX - rect.left) / window.innerWidth
     y = (cY/cH) * (e.clientY - rect.top) / window.innerHeight
-    L.innerText = `(${x},${y}) `
+}
+function update(e){
+    getPos(e)
+    L.innerText = `(${x},${y})`
     if(md){
         c.lineTo(x,y)
         c.stroke()
@@ -27,8 +30,9 @@ function update(e){
 }
 document.ontouchmove = document.onmousemove = update
 document.ontouchstart = document.onmousedown = function(){
-    c.beginPath()
+    getPos()
     c.moveTo(x,y)
+    c.beginPath()
     md=true
 }
 document.ontouchend = document.onmouseup = function(){md=false}
