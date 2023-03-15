@@ -18,12 +18,15 @@
             position: absolute;
             background-color: antiquewhite;
         }
-        #L{
-            position: absolute;
-        }
         #B{
             position: absolute;
-            right: 1%;
+            right: 0;
+            top:0;
+            width: 50px;
+            height: 30px;
+            background: #e4ede8;
+            border-radius: 2px;
+            
         }
         #T{
             background-color: black;
@@ -35,12 +38,14 @@
     </head>
     <canvas id="C"></canvas>
     <iframe src="https://excalidraw.com/" id="E"></iframe>
-    <textarea type="text" id="I"></textarea>
-    <label id="L"></label>
-    <button id="B">Run</button>
-    <label id="T">Console</label>
+    <textarea type="text" id="I">
+/*Type JS code here.
+There is a canvas overlaping with Excalidraw.
+It's has 2d context 'c'.
+Maximum coordinates are cX and cY.*/
+    </textarea>
+    <button id="B" onclick="run()">Run</button>
+    <textarea id="T">Output</textarea>
     <script src="RCanvas.js"></script>
-
-    
     
 </html>
