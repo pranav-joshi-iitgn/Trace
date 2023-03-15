@@ -13,7 +13,7 @@ x = 0
 y = 0 
 md = false
 function RealPos(e){
-    if(e.touches!=undefined){e=e.touches[0]}
+    if(e.touches){e=e.touches[0]}
     x = (cX/cW) * (e.clientX - rect.left) / window.innerWidth
     y = (cY/cH) * (e.clientY - rect.top) / window.innerHeight
 }
