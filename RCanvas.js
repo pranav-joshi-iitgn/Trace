@@ -10,6 +10,10 @@ tH = 0.8
 if (navigator.userAgent.match(/Android/i)){
     cW=1
     I.style.pointerEvents='none'
+    I.style.width = 0
+    T.style.width = 0
+    can.style.width = 0
+    glass.style.width = 0
 }
 c = can.getContext("2d")
 g = glass.getContext('2d');
