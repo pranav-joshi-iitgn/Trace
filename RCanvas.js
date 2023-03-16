@@ -17,14 +17,44 @@ md=false;
 var X0,Y0,X,Y
 pos = {"X":X,"Y":Y}
 var pathX,pathY
+saves = []
+currentSlide = 1
+function pdf(){
+    var doc = new jsPDF()
+    for(var i=1;;i++){
+        c.putImageData(saves[i],0,0)
+        img = can.toDataURL("image/png")
+        doc.addImage(img,"PNG",10,10) 
+        if(i==saves.length-1){break;}
+        doc.addPage()
+    }
+
+    doc.save(`DrawingPad_${(new Date()).toString()}`)
+}
+function save(){
+    saves.push(c.getImageData(0,0,cX,cY))
+    print(`Saved as slide no. ${currentSlide}`)
+    currentSlide++
+}
+function load(n=currentSlide-1){
+    if(n<=0){
+        print("Nothing to load")
+        return;
+    }
+    c.putImageData(saves[n],0,0)
+    currentSlide = n
+}
+function undo(){
+    c.putImageData(saves[0],0,0)
+}
 
 function resize(){
     cX = innerWidth*cW
     cY = innerHeight*cH
-    c0 = c.getImageData(0,0,cX,cY)
+    saves[0] = c.getImageData(0,0,cX,cY)
     glass.width  = can.width  = cX
     glass.height = can.height = cY
-    c.putImageData(c0,0,0)
+    c.putImageData(saves[0],0,0)
 }
 window.onresize=resize
 
@@ -71,6 +101,7 @@ function draw(){
 
 //mouse
 can.onmousedown = function(e) {
+    if(e.button===2){return;}
     md=true;
     getPos(e)
     c.beginPath()
@@ -142,6 +173,10 @@ can.ontouchend = can.onmousemove = function(e){
     }
 }
 }
+
+can.addEventListener("pointerdown",function(){
+    saves[0] = c.getImageData(0,0,cX,cY)
+})
 
 draw()
 

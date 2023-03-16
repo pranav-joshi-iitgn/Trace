@@ -51,17 +51,21 @@
             height: 100%;
         }
     </style>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
 </head>
 <body>
     <canvas id="C" class="layer"></canvas>
     <canvas id="G" class="layer"></canvas>
-    <textarea type="text" id="I" class="text">
-/*Type JS code here.
-There is a canvas overlaping with Excalidraw.
-It's has 2d context 'c'.
-Maximum coordinates are cX and cY.*/
-    </textarea>
+<textarea type="text" id="I" class="text">/*
+Active canvas object is 'can' with context 'c'
+Maximum coordinates are 'cX' and 'cY'.
+Functions:
+save(): Saves current slide
+load(n): Loads slide n. If n not put, loads last slide
+undo(): Undoes the last curve. Can't undo more than once.
+clear(): Enter clear mode
+draw(): Enters draw mode */
+</textarea>
     <button id="B" onclick="run()">Run</button>
     <label id="T" class="text">Output</label>
     <script src="RCanvas.js"></script>
