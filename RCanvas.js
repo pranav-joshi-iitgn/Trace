@@ -12,8 +12,8 @@ if (navigator.userAgent.match(/Android/i)){
     I.style.pointerEvents='none'
     I.style.width = 0
     T.style.width = 0
-    can.style.width = 0
-    glass.style.width = 0
+    can.style.width = "100%"
+    glass.style.width = "100%"
 }
 c = can.getContext("2d")
 g = glass.getContext('2d');
