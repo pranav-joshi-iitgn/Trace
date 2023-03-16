@@ -130,7 +130,6 @@ can.onmousemove = function(e){
 
 //Touch
 can.ontouchstart = function(e) {
-    if(e.touches[0].touchType == "direct"){return}
     pathX=[];
     pathY=[];
     getPos(e);
@@ -140,7 +139,6 @@ can.ontouchstart = function(e) {
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
-    if(e.touches[0].touchType == "direct"){return}
     getPos(e);
     Dot(c,X,Y,r); 
     pathX.push(X)
@@ -148,7 +146,6 @@ can.ontouchmove = function(e) {
     e.preventDefault();
 }
 window.ontouchend = function(){
-    if(e.touches[0].touchType == "direct"){return}
     let l = pathX.length
     if(l===0){return;}
     c.beginPath()
