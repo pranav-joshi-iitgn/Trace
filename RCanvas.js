@@ -10,9 +10,11 @@ tH = 0.8
 c = can.getContext("2d")
 g = glass.getContext('2d');
 md = false
-r = 3
-c.lineWidth = 2*r
-g.lineWidth = 2*r
+r = 2
+lw = 2*r
+ew = 10*r
+g.lineWidth = c.lineWidth = lw
+g.lineCap = 'round'
 md=false;
 var X0,Y0,X,Y
 pos = {"X":X,"Y":Y}
@@ -55,6 +57,7 @@ function resize(){
     glass.width  = can.width  = cX
     glass.height = can.height = cY
     c.putImageData(saves[0],0,0)
+    c.lineWidth = lw
 }
 window.onresize=resize
 
@@ -74,7 +77,7 @@ function Dot(c,x=X,y=Y,size=r) {
     c.arc(x, y, size, 0, Math.PI*2, true);
     c.closePath();
     c.fill();
-    c.lineWidth = 2*r
+    c.lineWidth = lw
 }
 function getPos(e) {
     if (e.touches) {
@@ -99,6 +102,10 @@ function getPos(e) {
 
 function draw(){
 
+c.globalCompositeOperation = "source-over"
+c.lineWidth = lw
+c.lineCap = 'round'
+
 //mouse
 can.onmousedown = function(e) {
     if(e.button===2){return;}
@@ -122,7 +129,7 @@ can.onmousemove = function(e){
 }
 
 //Touch
-can.addEventListener("touchstart" ,function(e) {
+can.ontouchstart = function(e) {
     pathX=[];
     pathY=[];
     getPos(e);
@@ -130,15 +137,15 @@ can.addEventListener("touchstart" ,function(e) {
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
-})
-can.addEventListener("touchmove",function(e) { 
+}
+can.ontouchmove = function(e) { 
     getPos(e);
     Dot(c,X,Y,r); 
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
-})
-window.addEventListener("touchend" ,function(){
+}
+window.ontouchend = function(){
     let l = pathX.length
     if(l===0){return;}
     c.beginPath()
@@ -147,7 +154,14 @@ window.addEventListener("touchend" ,function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
-})
+}
+}
+
+function erase(){
+    draw()
+    c.globalCompositeOperation = "destination-out";
+    c.lineWidth = ew
+    c.lineCap = 'round'
 }
 
 function clear(){
@@ -157,13 +171,13 @@ can.ontouchstart = can.onmousedown = function(e) {
     X0 = X
     Y0 = Y
 }
-window.ontouchmove = window.onmouseup = function(e){
+window.ontouchend = window.onmouseup = function(e){
     md=false;
     getPos(e)
     c.clearRect(X0,Y0,X-X0,Y-Y0)
     g.clearRect(0,0,innerWidth,innerHeight)
 }
-can.ontouchend = can.onmousemove = function(e){ 
+can.ontouchmove = can.onmousemove = function(e){ 
     g.clearRect(X0,Y0,X-X0,Y-Y0)
     getPos(e);
     if (md) { 
