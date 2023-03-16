@@ -2,7 +2,6 @@ can = document.getElementById("C")
 glass = document.getElementById("G")
 I = document.getElementById("I")
 T = document.getElementById("T")
-Div = document.getElementById("Div")
 rect = can.getBoundingClientRect()
 cX = cY = 0
 cW = 0.7
@@ -40,10 +39,12 @@ function print(t){
 resize()
 
 function Dot(c,x=X,y=Y,size=r) {
+    c.lineWidth = 0
     c.beginPath();
     c.arc(x, y, size, 0, Math.PI*2, true);
     c.closePath();
     c.fill();
+    c.lineWidth = 2*r
 }
 function getPos(e) {
     if (e.touches) {
