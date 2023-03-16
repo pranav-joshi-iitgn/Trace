@@ -7,6 +7,10 @@ cX = cY = 0
 cW = 0.7
 cH = 1
 tH = 0.8
+if (navigator.userAgent.match(/Android/i)){
+    cW=1
+    I.style.pointerEvents='none'
+}
 c = can.getContext("2d")
 g = glass.getContext('2d');
 md = false
@@ -71,13 +75,13 @@ function print(t){
 }
 resize()
 
-function Dot(c,x=X,y=Y,size=r) {
-    c.lineWidth = 0
-    c.beginPath();
-    c.arc(x, y, size, 0, Math.PI*2, true);
-    c.closePath();
-    c.fill();
-    c.lineWidth = lw
+function Dot(ctx=c,x=X,y=Y,size=r) {
+    ctx.lineWidth = 0
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI*2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = lw
 }
 function getPos(e) {
     if (e.touches) {
@@ -191,6 +195,43 @@ can.ontouchmove = can.onmousemove = function(e){
 can.addEventListener("pointerdown",function(){
     saves[0] = c.getImageData(0,0,cX,cY)
 })
+
+function mathPos(x,y){
+    return {
+    'X' : cX*(1+x)/2 ,
+    'Y' : cY*(1-y)/2
+    }
+}
+function GoTo(x,y){
+    X = cX*(1+x)/2
+    Y = cY*(1-y)/2
+    c.moveTo(X,Y)
+}
+function LineTo(x,y){
+    X = cX*(1+x)/2
+    Y = cY*(1-y)/2
+    c.lineTo(X,Y)
+}
+function Rect(x1,y1,x2,y2){
+    c.fillRect(cX*(1+x1)/2,cY*(1-y1)/2,cX*(x2-x1)/2,cY*(y1-y2)/2)
+}
+function point(x,y){
+    GoTo(x,y)
+    Dot()
+}
+function plot(data){
+    var n = data.x.length
+    if(n !== data.y.length){
+        print("incompatible arrays")
+        return;
+    }
+    c.beginPath()
+    GoTo(data.x[0],data.y[0])
+    for(var i=1;i<data.x.length;i++){
+        LineTo(data.x[i],data.y[i])
+    }
+    c.stroke()
+}
 
 draw()
 
