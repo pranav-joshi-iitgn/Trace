@@ -1,12 +1,25 @@
+var info
+fetch('help.txt')
+  .then((response) => (info = response.text()));
 can = document.getElementById("C")
 glass = document.getElementById("G")
 I = document.getElementById("I")
+function Help(){
+    I.value = txt
+}
+Help()
 T = document.getElementById("T")
+c = can.getContext("2d")
+g = glass.getContext('2d');
 rect = can.getBoundingClientRect()
-cX = cY = 0
 cW = 0.7
 cH = 1
 tH = 0.8
+stages = []
+currentStage = 0
+var fX,fY,fW,fH;
+xlim = [0,100]
+ylim = [0,100]
 if (navigator.userAgent.match(/Android/i)){
     cW=1
     I.style.pointerEvents='none'
@@ -15,8 +28,6 @@ if (navigator.userAgent.match(/Android/i)){
     can.style.width = "100%"
     glass.style.width = "100%"
 }
-c = can.getContext("2d")
-g = glass.getContext('2d');
 md = false
 r = 2
 lw = 2*r
@@ -29,10 +40,39 @@ pos = {"X":X,"Y":Y}
 var pathX,pathY
 saves = []
 currentSlide = 1
+function load(n=currentSlide-1){
+    if(saves[n]){
+        c.putImageData(saves[n],0,0)
+    } else {
+        c.clearRect(0,0,cX,cY)
+    }
+    print(`Slide no. ${n}`)
+    currentSlide = n
+    stages.push(c.getImageData(0,0,cX,cY))
+    currentStage++;
+}
+function resize(){
+    cX = innerWidth*cW
+    cY = innerHeight*cH
+    stages[currentStage] = c.getImageData(0,0,cX,cY)
+    glass.width  = can.width  = cX
+    glass.height = can.height = cY
+    c.putImageData(stages[currentStage],0,0)
+    c.lineWidth = lw
+}
+window.onresize=resize
+resize()
+fX = 0
+fY = cY
+fW = cX
+fH = cY
+function help(){
+    file = new FileReader()
+}
 function pdf(){
     var doc = new jsPDF()
     for(var i=1;;i++){
-        c.putImageData(saves[i],0,0)
+        load(i)
         img = can.toDataURL("image/png")
         doc.addImage(img,"PNG",10,10) 
         if(i==saves.length-1){break;}
@@ -41,33 +81,29 @@ function pdf(){
 
     doc.save(`DrawingPad_${(new Date()).toString()}`)
 }
-function save(){
-    saves.push(c.getImageData(0,0,cX,cY))
-    print(`Saved as slide no. ${currentSlide}`)
-    currentSlide++
-}
-function load(n=currentSlide-1){
+function save(n=currentSlide){
     if(n<=0){
-        print("Nothing to load")
-        return;
+        print("Remember: Only slides with positive integer indices will be used to make pdf")
     }
-    c.putImageData(saves[n],0,0)
-    currentSlide = n
+    saves[n] = c.getImageData(0,0,cX,cY)
+    print(`Saved as slide no. ${n}`)
+}
+function Next(){
+    currentSlide++
+    load(currentSlide)
 }
 function undo(){
-    c.putImageData(saves[0],0,0)
+    if(currentStage){
+        currentStage--
+    }
+    c.putImageData(stages[currentStage],0,0)
 }
-
-function resize(){
-    cX = innerWidth*cW
-    cY = innerHeight*cH
-    saves[0] = c.getImageData(0,0,cX,cY)
-    glass.width  = can.width  = cX
-    glass.height = can.height = cY
-    c.putImageData(saves[0],0,0)
-    c.lineWidth = lw
+function redo(){
+    if(currentStage){
+        currentStage++
+    }
+    c.putImageData(stages[currentStage],0,0)
 }
-window.onresize=resize
 
 function run(){
     let s = I.value
@@ -75,9 +111,9 @@ function run(){
     console.log(s)
 }
 function print(t){
-    T.innerText = t
+    T.innerText += "\n"+t.toString()
+    console.log(t)
 }
-resize()
 
 function Dot(ctx=c,x=X,y=Y,size=r) {
     ctx.lineWidth = 0
@@ -196,28 +232,38 @@ can.ontouchmove = can.onmousemove = function(e){
 }
 }
 
-can.addEventListener("pointerdown",function(){
-    saves[0] = c.getImageData(0,0,cX,cY)
+can.addEventListener("pointerup",function(){
+    currentStage++
+    stages[currentStage] = c.getImageData(0,0,cX,cY)
+    for(var i=currentStage+1;i<stages.length;i++){
+        delete stages[i]
+    }
 })
 
 function mathPos(x,y){
+    x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
+    y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
     return {
-    'X' : cX*(1+x)/2 ,
-    'Y' : cY*(1-y)/2
+    'X' : x ,
+    'Y' : y
     }
 }
 function GoTo(x,y){
-    X = cX*(1+x)/2
-    Y = cY*(1-y)/2
+    X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
+    Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
     c.moveTo(X,Y)
 }
 function LineTo(x,y){
-    X = cX*(1+x)/2
-    Y = cY*(1-y)/2
+    X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
+    Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
     c.lineTo(X,Y)
 }
 function Rect(x1,y1,x2,y2){
-    c.fillRect(cX*(1+x1)/2,cY*(1-y1)/2,cX*(x2-x1)/2,cY*(y1-y2)/2)
+    var X1 = fX + fW*(x1-xlim[0])/(xlim[1]-xlim[0])
+    var Y1 = fY - fH*(y1-ylim[0])/(ylim[1]-ylim[0])
+    var X2 = fX + fW*(x2-xlim[0])/(xlim[1]-xlim[0])
+    var Y2 = fY - fH*(y2-ylim[0])/(ylim[1]-ylim[0])
+    c.fillRect(X1,Y1,X2-X1,Y2-Y1)
 }
 function point(x,y){
     GoTo(x,y)
