@@ -6,11 +6,12 @@ c = can.getContext("2d")
 g = glass.getContext('2d');
 rect = can.getBoundingClientRect()
 cW = 0.7
+cH = 1
 cX = innerWidth
 cY = innerHeight
 stages = []
 currentStage = 0
-var fX,fY,fW,fH;
+fX,fY,fW,fH;
 xlim = [0,100]
 ylim = [0,100]
 md = false
@@ -19,42 +20,36 @@ lw = 2*r
 ew = 10*r
 g.lineWidth = c.lineWidth = lw
 g.lineCap = 'round'
-md=false;
-var X0,Y0,X,Y
-pos = {"X":X,"Y":Y}
+var X0=0,Y0=0,X,Y
+var pos = {"X":X,"Y":Y}
 var pathX,pathY
-saves = []
-currentSlide = 1
+var saves = []
+var currentSlide = 1
+var fX = 0
+var fY = cY
+var fW = cX
+var fH = cY
+var isCreate=true
+var isFill=false
+function snap(){
+    return c.getImageData(0,0,cX,cY)
+}
+function put(img,dx=0,dy=0){
+    c.putImageData(img,dx,dy)
+}
 function load(n=currentSlide-1){
     if(saves[n]){
-        c.putImageData(saves[n],0,0)
+        put(saves[n],0,0)
     } else {
         c.clearRect(0,0,cX,cY)
     }
     print(`Slide no. ${n}`)
     currentSlide = n
-    stages.push(c.getImageData(0,0,cX,cY))
+    stages.push(snap())
     currentStage++;
 }
-function resize(s=cW){
-    cW = s
-    stages[currentStage] = c.getImageData(0,0,cX,cY)
-    cX = innerWidth
-    cY = innerHeight
-    glass.width  = can.width  = innerWidth
-    glass.height = can.height = innerHeight
-    I.style.width = T.style.width = innerWidth*(1-cW)
-    c.putImageData(stages[currentStage],0,0)
-    c.lineWidth = lw
-}
-window.onresize=resize
-resize()
-fX = 0
-fY = cY
-fW = cX
-fH = cY
-function help(){
-    file = new FileReader()
+function Last(){
+    load()
 }
 function pdf(){
     var doc = new jsPDF()
@@ -72,7 +67,7 @@ function save(n=currentSlide){
     if(n<=0){
         print("Remember: Only slides with positive integer indices will be used to make pdf")
     }
-    saves[n] = c.getImageData(0,0,cX,cY)
+    saves[n] = snap()
     print(`Saved as slide no. ${n}`)
 }
 function Next(){
@@ -83,25 +78,23 @@ function undo(){
     if(currentStage){
         currentStage--
     }
-    c.putImageData(stages[currentStage],0,0)
+    put(stages[currentStage],0,0)
 }
 function redo(){
     if(currentStage){
         currentStage++
     }
-    c.putImageData(stages[currentStage],0,0)
+    put(stages[currentStage],0,0)
 }
-
 function run(){
     let s = I.value
     eval(s);
     console.log(s)
 }
 function print(t){
-    T.innerText += "\n"+t.toString()
+    T.innerText = t.toString()
     console.log(t)
 }
-
 function Dot(ctx=c,x=X,y=Y,size=r) {
     ctx.lineWidth = 0
     ctx.beginPath();
@@ -130,18 +123,16 @@ function getPos(e) {
     pos.Y = Y
     return pos
 }
-
-function addMode(){
+function Create(){
     c.globalCompositeOperation = "source-over"
     c.lineWidth = lw
     c.lineCap = 'round'
 }
-function eraseMode(){
+function Erase(){
     c.globalCompositeOperation = "destination-out";
     c.lineWidth = ew
     c.lineCap = 'round'
 }
-
 function draw(){
 
 //mouse
@@ -153,8 +144,8 @@ can.onmousedown = function(e) {
     c.moveTo(X,Y)
 }
 window.onmouseup = function(){
+    if(md){c.stroke()}
     md=false;
-    c.stroke()
 }
 can.onmousemove = function(e){ 
     getPos(e);
@@ -168,6 +159,7 @@ can.onmousemove = function(e){
 
 //Touch
 can.ontouchstart = function(e) {
+    md = true
     pathX=[];
     pathY=[];
     getPos(e);
@@ -177,6 +169,7 @@ can.ontouchstart = function(e) {
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
+    if(!md){return;}
     getPos(e);
     Dot(c,X,Y,r); 
     pathX.push(X)
@@ -184,6 +177,7 @@ can.ontouchmove = function(e) {
     e.preventDefault();
 }
 window.ontouchend = function(){
+    if(!md){return;}
     let l = pathX.length
     if(l===0){return;}
     c.beginPath()
@@ -194,7 +188,7 @@ window.ontouchend = function(){
     c.stroke()
 }
 }
-function clear(){
+function fill(){
 can.ontouchstart = can.onmousedown = function(e) {
     md=true;
     getPos(e)
@@ -202,10 +196,11 @@ can.ontouchstart = can.onmousedown = function(e) {
     Y0 = Y
 }
 window.ontouchend = window.onmouseup = function(e){
-    md=false;
+    if(md){
     getPos(e)
-    c.clearRect(X0,Y0,X-X0,Y-Y0)
-    g.clearRect(0,0,innerWidth,innerHeight)
+    c.fillRect(X0,Y0,X-X0,Y-Y0)
+    g.clearRect(0,0,cX,cY)}
+    md=false;
 }
 can.ontouchmove = can.onmousemove = function(e){ 
     g.clearRect(X0,Y0,X-X0,Y-Y0)
@@ -219,13 +214,11 @@ can.ontouchmove = can.onmousemove = function(e){
 }
 function addStages(){
     currentStage++
-    stages[currentStage] = c.getImageData(0,0,cX,cY)
+    stages[currentStage] = snap()
     for(var i=currentStage+1;i<stages.length;i++){
         delete stages[i]
     }
 }
-window.addEventListener("pointerup",addStages)
-
 function mathPos(x,y){
     x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
     y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
@@ -249,13 +242,14 @@ function Rect(x1,y1,x2,y2){
     var Y1 = fY - fH*(y1-ylim[0])/(ylim[1]-ylim[0])
     var X2 = fX + fW*(x2-xlim[0])/(xlim[1]-xlim[0])
     var Y2 = fY - fH*(y2-ylim[0])/(ylim[1]-ylim[0])
-    c.fillRect(X1,Y1,X2-X1,Y2-Y1)
+    c.strokeRect(X1,Y1,X2-X1,Y2-Y1)
 }
 function point(x,y){
     GoTo(x,y)
     Dot()
 }
 function plot(data){
+    c.strokeRect(fX,fY-fH,fW,fH)
     var n = data.x.length
     if(n !== data.y.length){
         print("incompatible arrays")
@@ -268,6 +262,63 @@ function plot(data){
     }
     c.stroke()
 }
+function CoE(){
+    if(isCreate){
+        Erase()
+    } else {
+        Create()
+    }
+    isCreate = !isCreate
+}  
+function DoF(){
+    if(isFill){
+        draw()
+    } else {
+        fill()
+    }
+    isFill = !isFill
+}
+var fList = {
+    run,
+    CoE,
+    DoF,
+    undo,
+    redo,
+    save,
+    Next,
+    Last,
+}
+var bList = {}
+var Top = 0
+var B
+for (f in fList){
+    B = document.createElement("button")
+    B.innerText = f
+    B.id = f
+    B.onclick =fList[f]
+    B.style.top = `${Top}px`
+    Top += 30
+    document.body.appendChild(B)
+    bList[f]=B
+}
+function resize(s=cW){
+    cW = s
+    stages[currentStage] = snap()
+    console.log(cX,cY)
+    cX = window.innerWidth
+    cY = window.innerHeight
+    glass.width  = can.width  = cX 
+    glass.height = can.height = cY
+    I.style.right = T.style.right = `${cW*100}%`
+    for(var b in bList){
+        bList[b].style.left = `${(1-cW)*100 + 1}%`
+    }
+    put(stages[currentStage],0,0)
+    c.lineWidth = lw
+}
+window.onresize=resize
+window.addEventListener("pointerup",addStages)
+resize()
 if (navigator.userAgent.match(/Android/i)){
     I.style.pointerEvents='none'
     resize(1)
