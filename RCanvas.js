@@ -1,35 +1,20 @@
-var info
-fetch('help.txt')
-  .then((response) => (info = response.text()));
 can = document.getElementById("C")
 glass = document.getElementById("G")
 I = document.getElementById("I")
-function Help(){
-    I.value = info
-}
-Help()
 T = document.getElementById("T")
 c = can.getContext("2d")
 g = glass.getContext('2d');
 rect = can.getBoundingClientRect()
 cW = 0.7
-cH = 1
-tH = 0.8
+cX = innerWidth
+cY = innerHeight
 stages = []
 currentStage = 0
 var fX,fY,fW,fH;
 xlim = [0,100]
 ylim = [0,100]
-if (navigator.userAgent.match(/Android/i)){
-    cW=1
-    I.style.pointerEvents='none'
-    I.style.width = 0
-    T.style.width = 0
-    can.style.width = "100%"
-    glass.style.width = "100%"
-}
 md = false
-r = 2
+r = 1
 lw = 2*r
 ew = 10*r
 g.lineWidth = c.lineWidth = lw
@@ -51,12 +36,14 @@ function load(n=currentSlide-1){
     stages.push(c.getImageData(0,0,cX,cY))
     currentStage++;
 }
-function resize(){
-    cX = innerWidth*cW
-    cY = innerHeight*cH
+function resize(s=cW){
+    cW = s
     stages[currentStage] = c.getImageData(0,0,cX,cY)
-    glass.width  = can.width  = cX
-    glass.height = can.height = cY
+    cX = innerWidth
+    cY = innerHeight
+    glass.width  = can.width  = innerWidth
+    glass.height = can.height = innerHeight
+    I.style.width = T.style.width = innerWidth*(1-cW)
     c.putImageData(stages[currentStage],0,0)
     c.lineWidth = lw
 }
@@ -139,16 +126,23 @@ function getPos(e) {
         X = e.layerX;
         Y = e.layerY;
     }
-    pos.X = X = (cX/cW) * (X - rect.left) / window.innerWidth
-    pos.Y = Y = (cY/cH) * (Y - rect.top) / window.innerHeight
+    pos.X = X
+    pos.Y = Y
     return pos
 }
 
-function draw(){
+function addMode(){
+    c.globalCompositeOperation = "source-over"
+    c.lineWidth = lw
+    c.lineCap = 'round'
+}
+function eraseMode(){
+    c.globalCompositeOperation = "destination-out";
+    c.lineWidth = ew
+    c.lineCap = 'round'
+}
 
-c.globalCompositeOperation = "source-over"
-c.lineWidth = lw
-c.lineCap = 'round'
+function draw(){
 
 //mouse
 can.onmousedown = function(e) {
@@ -200,14 +194,6 @@ window.ontouchend = function(){
     c.stroke()
 }
 }
-
-function erase(){
-    draw()
-    c.globalCompositeOperation = "destination-out";
-    c.lineWidth = ew
-    c.lineCap = 'round'
-}
-
 function clear(){
 can.ontouchstart = can.onmousedown = function(e) {
     md=true;
@@ -231,14 +217,14 @@ can.ontouchmove = can.onmousemove = function(e){
     }
 }
 }
-
-can.addEventListener("pointerup",function(){
+function addStages(){
     currentStage++
     stages[currentStage] = c.getImageData(0,0,cX,cY)
     for(var i=currentStage+1;i<stages.length;i++){
         delete stages[i]
     }
-})
+}
+window.addEventListener("pointerup",addStages)
 
 function mathPos(x,y){
     x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
@@ -282,6 +268,9 @@ function plot(data){
     }
     c.stroke()
 }
-
+if (navigator.userAgent.match(/Android/i)){
+    I.style.pointerEvents='none'
+    resize(1)
+}
 draw()
 

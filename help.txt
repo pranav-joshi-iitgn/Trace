@@ -1,9 +1,0 @@
-Active canvas object is 'can' with context 'c'
-Maximum coordinates are 'cX' and 'cY'.
-Functions:
-save(): Saves current slide
-load(n): Loads slide n. If n not put, loads last slide
-undo(): Undoes the last curve. Can't undo more than once.
-clear(): Enter clear mode
-draw(): Enters draw mode 
-pdf(): Exports to PDF document 
