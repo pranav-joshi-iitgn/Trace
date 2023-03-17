@@ -5,7 +5,7 @@ can = document.getElementById("C")
 glass = document.getElementById("G")
 I = document.getElementById("I")
 function Help(){
-    I.value = txt
+    I.value = info
 }
 Help()
 T = document.getElementById("T")
