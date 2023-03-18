@@ -50,6 +50,7 @@ function load(n=currentSlide-1){
 }
 function Last(){
     load()
+    currentSlide--
 }
 function pdf(){
     var doc = new jsPDF()
