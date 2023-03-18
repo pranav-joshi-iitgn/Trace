@@ -9,7 +9,7 @@ cW = 0.7
 cH = 1
 cX = innerWidth
 cY = innerHeight
-var stages = []
+var stages = [c.getImageData(0,0,cX,cY)]
 var currentStage = 0
 var fX,fY,fW,fH;
 xlim = [0,100]
@@ -30,6 +30,8 @@ var fH = cY
 var isCreate=true
 var isFill=false
 var editor = true
+var bList = {}
+var Top = 0
 function Remember(){
     if(isFill){
         c.lineWidth = 0
@@ -56,22 +58,25 @@ function load(n=currentSlide-1){
     } else {
         c.clearRect(0,0,cX,cY)
     }
+    addStages()
     print(`Slide no. ${n}`)
     currentSlide = n
-    stages.push(snap())
-    currentStage++;
 }
 function Last(){
+    if(currentSlide==0){
+        print("No slide before this.")
+        return;
+    }
     load()
     currentSlide--
 }
-function pdf(){
-    var doc = new jsPDF()
-    for(var i=1;;i++){
+function pdf(start=1,stop=saves.length-1){
+    var doc = new jsPDF('l')
+    for(var i=start;;i++){
         load(i)
         img = can.toDataURL("image/png")
         doc.addImage(img,"PNG",10,10) 
-        if(i==saves.length-1){break;}
+        if(i==stop){break;}
         doc.addPage()
     }
 
@@ -89,16 +94,25 @@ function Next(){
     load(currentSlide)
 }
 function undo(){
-    if(currentStage){
-        currentStage--
+    if(currentStage==1){
+        bList["undo"].style.opacity = 0.5
     }
+    if(currentStage==0){return;}
+    currentStage--
     put(stages[currentStage],0,0)
+    bList["redo"].style.opacity = 1
+
 }
 function redo(){
-    if(currentStage){
-        currentStage++
+    if(currentStage==stages.length-2){
+        bList["redo"].style.opacity = 0.5
     }
+    if(currentStage>=stages.length-1){
+        return;
+    }
+    currentStage++
     put(stages[currentStage],0,0)
+    bList["undo"].style.opacity = 1
 }
 function run(){
     let s = I.value
@@ -313,48 +327,56 @@ function code(){
     }
     editor = !editor
 }
-var actionList = {
+var actions = {
     run,
-    draw,
-    fill,
     undo,
     redo,
     save,
     Next,
     Last,
 }
-var modeList = {
+var toggles = {
     code,
     "Eraser":CoE,
 }
-var bList = {}
-var Top = 0
-var B
+var modes = {
+    draw,
+    fill,
+}
 function createButton(id,fun){
     var But = document.createElement("button")
     But.innerText = id
     But.id = id
     But.color = "#f8f9f8"
-    But.onclick = function(){fun()}
     But.style.top = `${Top}px`
     Top += 30
     document.body.appendChild(But)
     bList[id]=But
+    But.onclick = fun
 }
-for (var m in modeList){
-    createButton(m,function(){
-        if(this.color=="#f8f9f8"){
-            this.style.background="#acd5c1"
-            this.color = "#acd5c1"
+for (var t in toggles){
+    createButton(t,function(e){
+        toggles[e.target.id]()
+        if(e.target.color=="#f8f9f8"){
+            e.target.style.background="#acd5c1"
+            e.target.color = "#acd5c1"
         } else {
-            this.color = "#f8f9f8"
-            this.style.background="#f8f9f8"
+            e.target.color = "#f8f9f8"
+            e.target.style.background="#f8f9f8"
         }
-        modeList[this.id]()
     })
 }
-for (var f in actionList){
-    createButton(f,actionList[f])
+for (var a in actions){
+    createButton(a,function(e){actions[e.target.id]()})
+}
+for (var m in modes){
+    createButton(m,function(e){
+        modes[e.target.id]()
+        for(var m in modes){
+            bList[m].style.background="#f8f9f8"
+        }
+        e.target.style.background="#acd5c1"
+    })
 }
 function resize(s=1-cW){
     cW = 1-s
@@ -362,6 +384,7 @@ function resize(s=1-cW){
     console.log(cX,cY)
     cX = window.innerWidth
     cY = window.innerHeight
+    stages[0] = snap()
     glass.width  = can.width  = cX 
     glass.height = can.height = cY
     I.style.right = T.style.right = `${cW*100}%`
@@ -373,11 +396,17 @@ function resize(s=1-cW){
 }
 
 window.onresize=resize
-can.addEventListener("pointerup",addStages)
+bList["undo"].style.opacity = 0.5
+bList["redo"].style.opacity = 0.5
+can.addEventListener("pointerup",function(){
+    addStages()
+    bList["undo"].style.opacity = 1
+    bList["redo"].style.opacity = 0.5
+
+})
 resize()
 if (navigator.userAgent.match(/Android/i)){
     I.style.pointerEvents='none'
     resize(1)
 }
-draw()
-
+bList.draw.click()
