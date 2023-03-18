@@ -5,7 +5,7 @@ T = document.getElementById("T")
 c = can.getContext("2d")
 g = glass.getContext('2d');
 rect = can.getBoundingClientRect()
-cW = 0.7
+cW = 1
 cH = 1
 cX = innerWidth
 cY = innerHeight
@@ -29,7 +29,7 @@ var fW = cX
 var fH = cY
 var isCreate=true
 var isFill=false
-var editor = true
+var editor = false
 var bList = {}
 var Top = 0
 function Remember(){
@@ -106,6 +106,9 @@ function Copy(n=currentSlide){
     saves.push(saves[n])
     load(saves.length-1)
 }
+function insert(){
+    saves.splice(currentSlide,0,snap())
+}
 function Del(n=currentSlide,howmany=1){
     saves.splice(n,howmany)
     load(saves.length)
@@ -130,6 +133,10 @@ function redo(){
     currentStage++
     put(stages[currentStage],0,0)
     bList["undo"].style.opacity = 1
+}
+function clear(){
+    c.clearRect(0,0,cX,cY)
+    addStages()
 }
 function run(){
     let s = I.value
@@ -344,6 +351,22 @@ function code(){
     }
     editor = !editor
 }
+function resize(s=1-cW){
+    cW = 1-s
+    stages[currentStage] = snap()
+    console.log(cX,cY)
+    cX = window.innerWidth
+    cY = window.innerHeight
+    stages[0] = snap()
+    glass.width  = can.width  = cX 
+    glass.height = can.height = cY
+    I.style.right = T.style.right = `${cW*100}%`
+    for(var b in bList){
+        bList[b].style.left = `${(1-cW)*100 + 1}%`
+    }
+    put(stages[currentStage],0,0)
+    Remember()
+}
 var actions = {
     run,
     Del,
@@ -352,6 +375,7 @@ var actions = {
     save,
     Next,
     Last,
+    clear,
 }
 var toggles = {
     code,
@@ -361,16 +385,28 @@ var modes = {
     draw,
     fill,
 }
+var fList = {
+    code,
+    run,
+    clear,
+    undo,
+    redo,
+    save,
+    Next,
+    Last,
+    "Eraser":CoE,
+    draw,
+    fill,
+}
 function createButton(id,fun){
     var But = document.createElement("button")
     But.innerText = id
     But.id = id
     But.color = "#f8f9f8"
-    But.style.top = `${Top}px`
-    Top += 30
     document.body.appendChild(But)
     bList[id]=But
     But.onclick = fun
+    But.onpointermove = function(e){e.preventDefault()}
 }
 for (var t in toggles){
     createButton(t,function(e){
@@ -396,35 +432,23 @@ for (var m in modes){
         e.target.style.background="#acd5c1"
     })
 }
-function resize(s=1-cW){
-    cW = 1-s
-    stages[currentStage] = snap()
-    console.log(cX,cY)
-    cX = window.innerWidth
-    cY = window.innerHeight
-    stages[0] = snap()
-    glass.width  = can.width  = cX 
-    glass.height = can.height = cY
-    I.style.right = T.style.right = `${cW*100}%`
-    for(var b in bList){
-        bList[b].style.left = `${(1-cW)*100 + 1}%`
-    }
-    put(stages[currentStage],0,0)
-    Remember()
+for (f in fList){
+    bList[f].style.top = `${Top}px`
+    Top += 30
 }
-
 window.onresize=resize
 bList["undo"].style.opacity = 0.5
 bList["redo"].style.opacity = 0.5
-can.addEventListener("pointerup",function(){
+bList["Del"].style.bottom = 5 + "px"
+can.addEventListener("pointerup",function(e){
+    e.preventDefault()
     addStages()
     bList["undo"].style.opacity = 1
     bList["redo"].style.opacity = 0.5
 
 })
 resize()
-if (navigator.userAgent.match(/Android/i)){
-    I.style.pointerEvents='none'
-    resize(1)
+if(!navigator.userAgent.match(/Android/i)){
+    bList.code.click()   
 }
 bList.draw.click()
