@@ -106,7 +106,7 @@ function Copy(n=currentSlide){
     saves.push(saves[n])
     load(saves.length-1)
 }
-function Delete(n=currentSlide,howmany=1){
+function Del(n=currentSlide,howmany=1){
     saves.splice(n,howmany)
     load(saves.length)
 }
@@ -346,6 +346,7 @@ function code(){
 }
 var actions = {
     run,
+    Del,
     undo,
     redo,
     save,
