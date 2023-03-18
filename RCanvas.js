@@ -92,7 +92,7 @@ function Next(){
     currentSlide++
     load(currentSlide)
 }
-function show(i=2){
+function show(i=500){
     currentSlide = 0
     ss = setInterval(function(){
         Next()
@@ -100,6 +100,15 @@ function show(i=2){
             clearInterval(ss)
         }
     },i)
+}
+function Copy(n=currentSlide){
+    save()
+    saves.push(saves[n])
+    load(saves.length-1)
+}
+function Delete(n=currentSlide,howmany=1){
+    saves.splice(n,howmany)
+    load(saves.length)
 }
 function undo(){
     if(currentStage==1){
