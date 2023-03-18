@@ -23,7 +23,7 @@ var pos = {"X":X,"Y":Y}
 var pathX,pathY
 var saves = []
 var currentSlide = 1
-var fX = 0
+var fX = 0 
 var fY = cY
 var fW = cX
 var fH = cY
@@ -185,6 +185,37 @@ function Erase(){
 }
 function draw(){
 
+if(navigator.userAgent.match(/Android/i)){
+//Touch
+can.ontouchstart = function(e) {
+    md = true
+    pathX=[];
+    pathY=[];
+    getPos(e);
+    Dot(c,X,Y,r);
+    pathX.push(X)
+    pathY.push(Y)
+    e.preventDefault();
+}
+can.ontouchmove = function(e) { 
+    if(!md){return;}
+    getPos(e);
+    Dot(c,X,Y,r); 
+    pathX.push(X)
+    pathY.push(Y)
+    e.preventDefault();
+}
+window.ontouchend = function(){
+    if(!md){return;}
+    let l = pathX.length
+    if(l===0){return;}
+    c.beginPath()
+    c.moveTo(pathX[0],pathY[0])
+    for(var i=1;i<l;i++){
+        c.lineTo(pathX[i],pathY[i])
+    }
+    c.stroke()
+}} else {
 //mouse
 can.onmousedown = function(e) {
     if(e.button===2){return;}
@@ -217,36 +248,6 @@ can.onmousemove = function(e){
         g.moveTo(X,Y)
     }
 }
-
-//Touch
-can.ontouchstart = function(e) {
-    md = true
-    pathX=[];
-    pathY=[];
-    getPos(e);
-    Dot(c,X,Y,r);
-    pathX.push(X)
-    pathY.push(Y)
-    e.preventDefault();
-}
-can.ontouchmove = function(e) { 
-    if(!md){return;}
-    getPos(e);
-    Dot(c,X,Y,r); 
-    pathX.push(X)
-    pathY.push(Y)
-    e.preventDefault();
-}
-window.ontouchend = function(){
-    if(!md){return;}
-    let l = pathX.length
-    if(l===0){return;}
-    c.beginPath()
-    c.moveTo(pathX[0],pathY[0])
-    for(var i=1;i<l;i++){
-        c.lineTo(pathX[i],pathY[i])
-    }
-    c.stroke()
 }
 }
 function fill(){
@@ -289,13 +290,13 @@ function mathPos(x,y){
     }
 }
 function GoTo(x,y){
-    X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
-    Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
+    X = fX + (fW*(x-xlim[0])/(xlim[1]-xlim[0]))
+    Y = fY - (fH*(y-ylim[0])/(ylim[1]-ylim[0]))
     c.moveTo(X,Y)
 }
 function LineTo(x,y){
-    X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
-    Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
+    X = fX + (fW*(x-xlim[0])/(xlim[1]-xlim[0]))
+    Y = fY - (fH*(y-ylim[0])/(ylim[1]-ylim[0]))
     c.lineTo(X,Y)
 }
 function Rect(x1,y1,x2,y2){
@@ -357,6 +358,10 @@ function resize(s=1-cW){
     console.log(cX,cY)
     cX = window.innerWidth
     cY = window.innerHeight
+    fX = 0 
+    fY = cY
+    fW = cX
+    fH = cY
     stages[0] = snap()
     glass.width  = can.width  = cX 
     glass.height = can.height = cY
@@ -406,7 +411,7 @@ function createButton(id,fun){
     document.body.appendChild(But)
     bList[id]=But
     But.onclick = fun
-    But.onpointermove = function(e){e.preventDefault()}
+    But.onmousemove = But.ontouchmove = function(e){e.preventDefault()}
 }
 for (var t in toggles){
     createButton(t,function(e){
@@ -445,7 +450,6 @@ can.addEventListener("pointerup",function(e){
     addStages()
     bList["undo"].style.opacity = 1
     bList["redo"].style.opacity = 0.5
-
 })
 resize()
 if(!navigator.userAgent.match(/Android/i)){
