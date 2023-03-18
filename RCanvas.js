@@ -68,7 +68,6 @@ function Last(){
         return;
     }
     load()
-    currentSlide--
 }
 function pdf(start=1,stop=saves.length-1){
     var doc = new jsPDF('l')
@@ -92,6 +91,15 @@ function save(n=currentSlide){
 function Next(){
     currentSlide++
     load(currentSlide)
+}
+function show(i=2){
+    currentSlide = 0
+    ss = setInterval(function(){
+        Next()
+        if(currentSlide>=saves.length){
+            clearInterval(ss)
+        }
+    },i)
 }
 function undo(){
     if(currentStage==1){
