@@ -30,8 +30,8 @@ var fH = cY
 var isCreate=true
 var isFill=false
 var editor = false
+var fingerDrawing = true
 var bList = {}
-var Top = 0
 function Remember(){
     if(isFill){
         c.lineWidth = 0
@@ -142,9 +142,10 @@ function run(){
     let s = I.value
     eval(s);
     console.log(s)
+    addStages()
 }
 function print(t){
-    T.innerText = t.toString()
+    T.innerText = JSON.stringify(t)
     console.log(t)
 }
 function Dot(ctx=c,x=X,y=Y,size=r) {
@@ -184,8 +185,7 @@ function Erase(){
     Remember()
 }
 function draw(){
-
-if(navigator.userAgent.match(/Android/i)){
+if(navigator.userAgent.match(/Android/i) && fingerDrawing){
 //Touch
 can.ontouchstart = function(e) {
     md = true
@@ -352,7 +352,7 @@ function code(){
     }
     editor = !editor
 }
-function resize(s=1-cW){
+function resize(s=1-cW,Top=0,Bottom=0){
     cW = 1-s
     stages[currentStage] = snap()
     console.log(cX,cY)
@@ -368,6 +368,15 @@ function resize(s=1-cW){
     I.style.right = T.style.right = `${cW*100}%`
     for(var b in bList){
         bList[b].style.left = `${(1-cW)*100 + 1}%`
+    }
+    for (var b in buttonHigh){
+        if(buttonHigh[b]){
+            bList[b].style.top = `${Top}px`
+            Top += 30
+        } else{
+            bList[b].style.bottom = `${Bottom}px`
+            Bottom += 30
+        }
     }
     put(stages[currentStage],0,0)
     Remember()
@@ -390,18 +399,19 @@ var modes = {
     draw,
     fill,
 }
-var fList = {
-    code,
-    run,
-    clear,
-    undo,
-    redo,
-    save,
-    Next,
-    Last,
-    "Eraser":CoE,
-    draw,
-    fill,
+var buttonHigh = {
+    Del:false,
+    code:false,
+    run:false,
+    clear:true,
+    undo:true,
+    redo:true,
+    save:true,
+    Next:true,
+    Last:true,
+    Eraser:true,
+    draw:true,
+    fill:true,
 }
 function createButton(id,fun){
     var But = document.createElement("button")
@@ -437,14 +447,9 @@ for (var m in modes){
         e.target.style.background="#acd5c1"
     })
 }
-for (f in fList){
-    bList[f].style.top = `${Top}px`
-    Top += 30
-}
 window.onresize=resize
 bList["undo"].style.opacity = 0.5
 bList["redo"].style.opacity = 0.5
-bList["Del"].style.bottom = 5 + "px"
 can.addEventListener("pointerup",function(e){
     e.preventDefault()
     addStages()
