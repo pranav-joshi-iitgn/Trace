@@ -1,11 +1,8 @@
 <html>
 <head>
     <style>
-        *:not(style,html){
-            position: absolute;
-            display: block;
-        }
         button{
+            position: fixed;
             width: 50px;
             height: 25px;
             background: #f8f9f8;
@@ -21,6 +18,7 @@
             background: #acd5c1;
         }
         .layer{
+            position: absolute;
             top: 0;
             left: 0;
             height: 100%;
@@ -29,10 +27,12 @@
             border-radius: 5px;
         }
         .text{
+            position: fixed;
             z-index: 3;
             border: #22205c;
             border-radius: 10px;
             left:0;
+
         }
         #C{
             z-index: 1;
@@ -54,11 +54,7 @@
             bottom:5px;
             height: 20%;
         }
-        body{
-            width: 100%;
-            bottom: 5px;
-            top: 0;
-        }
+        
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
     </head>
@@ -67,6 +63,6 @@
 <canvas id="G" class="layer"></canvas>
 <textarea type="text" id="I" class="text"></textarea>
 <label id="T" class="text">Output</label>
-<script src="RCanvas.js"></script>
 </body>
+<script src="RCanvas.js"></script>
 </html>

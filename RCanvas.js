@@ -185,9 +185,10 @@ function Erase(){
     Remember()
 }
 function draw(){
-if(navigator.userAgent.match(/Android/i) && fingerDrawing){
+if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
 can.ontouchstart = function(e) {
+    if(e.touches[0].type=="direct" && !fingerDrawing){return;}
     md = true
     pathX=[];
     pathY=[];
@@ -359,8 +360,8 @@ function resize(s=1-cW,Top=0,Bottom=0){
     cW = 1-s
     stages[currentStage] = snap()
     console.log(cX,cY)
-    cX = window.innerWidth
-    cY = window.innerHeight
+    cX = innerWidth
+    cY = innerHeight
     fX = 0 
     fY = cY
     fW = cX
