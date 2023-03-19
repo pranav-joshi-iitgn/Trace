@@ -45,6 +45,7 @@ function Remember(){
     g.lineCap = 'round'
     g.fillStyle = 'rgb(255, 99, 71)'
     g.strokeStyle = 'rgb(255, 99, 71)'
+    c.font = "20px serif"
 }
 function snap(){
     return c.getImageData(0,0,cX,cY)
@@ -327,6 +328,12 @@ function plot(data){
         LineTo(data.x[i],data.y[i])
     }
     c.stroke()
+    var txt = `(${xlim[0]},${ylim[0]})`
+    GoTo(xlim[0],ylim[0])
+    c.fillText(txt,X-5*(txt.length),Y+20)
+    txt = `(${xlim[1]},${ylim[1]})`
+    GoTo(xlim[1],ylim[1])
+    c.fillText(txt,X,Y)
 }
 function CoE(){
     if(isCreate){
