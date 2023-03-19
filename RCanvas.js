@@ -248,6 +248,9 @@ can.onmousemove = function(e){
         g.moveTo(X,Y)
     }
 }
+can.ontouchstart= function(){}
+can.ontouchmove=function(){}
+window.ontouchend=function(){}
 }
 }
 function fill(){
