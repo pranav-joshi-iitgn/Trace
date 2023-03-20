@@ -192,14 +192,6 @@ function getPos(e) {
     }
     return true
 }
-function Create(){
-    c.globalCompositeOperation = "source-over"
-    Remember()
-}
-function Erase(){
-    c.globalCompositeOperation = "destination-out";
-    Remember()
-}
 function draw(){
 if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
@@ -416,13 +408,14 @@ function fplot(x_range,y_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY,Fr
     }
     plot(data,x_range,y_range,FW,FH,FL,FB,Frame)
 }
-function CoE(){
+function Eraser(){
     if(isCreate){
-        Erase()
+        c.globalCompositeOperation = "destination-out";
     } else {
-        Create()
+        c.globalCompositeOperation = "source-over"
     }
     isCreate = !isCreate
+    Remember()
 }  
 function DoF(){
     if(isFill){
@@ -506,7 +499,7 @@ var actions = {
 }
 var toggles = {
     code,
-    "Eraser":CoE,
+    Eraser,
 }
 var modes = {
     draw,
