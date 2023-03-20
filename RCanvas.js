@@ -171,10 +171,12 @@ function getPos(e) {
         }
     }
     else if (e.offsetX) {
+        console.log("offset")
         X = e.offsetX;
         Y = e.offsetY;
     }
     else if (e.layerX) {
+        console.log("layerX,layerY")
         X = e.layerX;
         Y = e.layerY;
     }
@@ -448,7 +450,7 @@ function resize(s=1-cW,Top=0,Bottom=0){
     fW = cX
     fH = cY
     stages[0] = snap()
-    glass.width  = can.width  = cX 
+    glass.width  = can.width  = cX
     glass.height = can.height = cY
     I.style.right = T.style.right = `${cW*100}%`
     for(var b in bList){
