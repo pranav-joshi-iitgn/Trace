@@ -1,23 +1,25 @@
-can = document.getElementById("C")
-glass = document.getElementById("G")
-I = document.getElementById("I")
-T = document.getElementById("T")
-c = can.getContext("2d")
-g = glass.getContext('2d');
-rect = can.getBoundingClientRect()
-cW = 1
-cH = 1
-cX = innerWidth
-cY = innerHeight
+const can = document.getElementById("C")
+const glass = document.getElementById("G")
+const I = document.getElementById("I")
+const T = document.getElementById("T")
+const c = can.getContext("2d")
+const g = glass.getContext('2d');
+const rect = can.getBoundingClientRect()
+var cW = 1
+var cH = 1
+var cX = innerWidth
+var cY = innerHeight
 var stages = [c.getImageData(0,0,cX,cY)]
 var currentStage = 0
 var fX,fY,fW,fH;
-xlim = [0,100]
-ylim = [0,100]
-md = false
-r = 1
-lw = 2*r
-ew = 20*r
+var xlim = [0,100]
+var ylim = [0,100]
+var md = false
+var r = 1
+var lw = 2*r
+var ew = 20*r
+var Color = "black"
+var Font = "20px serif"
 var X0=0,Y0=0,X,Y
 var pos = {"X":X,"Y":Y}
 var pathX,pathY
@@ -32,20 +34,22 @@ var isFill=false
 var editor = false
 var fingerDrawing = true
 var bList = {}
-function Remember(){
+function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(isFill){
         c.lineWidth = 0
     } else if(isCreate){
-        c.lineWidth = lw
+        c.lineWidth = lw = Line_width
     } else {
-        c.lineWidth = ew
+        c.lineWidth = ew = Eraser_width
     }
     g.lineWidth = ew
     c.lineCap = 'round'
     g.lineCap = 'round'
     g.fillStyle = 'rgb(255, 99, 71)'
     g.strokeStyle = 'rgb(255, 99, 71)'
-    c.font = "20px serif"
+    c.fillStyle = Color = color
+    c.strokeStyle = Color = color
+    c.font = Font = font
 }
 function snap(){
     return c.getImageData(0,0,cX,cY)
@@ -217,6 +221,7 @@ window.ontouchend = function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
+    addStages()
 }} else {
 //mouse
 can.onmousedown = function(e) {
@@ -231,6 +236,7 @@ can.onmousedown = function(e) {
 window.onmouseup = function(){
     if(md){
         c.stroke()
+        addStages()
     }
     g.stroke()
     g.clearRect(0,0,cX,cY)
@@ -266,7 +272,9 @@ window.ontouchend = window.onmouseup = function(e){
     if(md){
     getPos(e)
     c.fillRect(X0,Y0,X-X0,Y-Y0)
-    g.clearRect(0,0,cX,cY)}
+    g.clearRect(0,0,cX,cY)
+    addStages()
+    }
     md=false;
 }
 can.ontouchmove = can.onmousemove = function(e){ 
@@ -285,6 +293,8 @@ function addStages(){
     for(var i=currentStage+1;i<stages.length;i++){
         delete stages[i]
     }
+    bList["undo"].style.opacity = 1
+    bList["redo"].style.opacity = 0.5
 }
 function mathPos(x,y){
     x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
@@ -304,36 +314,69 @@ function LineTo(x,y){
     Y = fY - (fH*(y-ylim[0])/(ylim[1]-ylim[0]))
     c.lineTo(X,Y)
 }
-function Rect(x1,y1,x2,y2){
-    var X1 = fX + fW*(x1-xlim[0])/(xlim[1]-xlim[0])
-    var Y1 = fY - fH*(y1-ylim[0])/(ylim[1]-ylim[0])
-    var X2 = fX + fW*(x2-xlim[0])/(xlim[1]-xlim[0])
-    var Y2 = fY - fH*(y2-ylim[0])/(ylim[1]-ylim[0])
-    c.strokeRect(X1,Y1,X2-X1,Y2-Y1)
+function Rect(x,y,w,h){
+    X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
+    Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
+    var W = fW*(w)/(xlim[1]-xlim[0])
+    var H = - fH*(h)/(ylim[1]-ylim[0])
+    c.strokeRect(X,Y,W,H)
 }
 function point(x,y){
     GoTo(x,y)
     Dot()
 }
-function plot(data){
-    c.strokeRect(fX,fY-fH,fW,fH)
+function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
+    xlim = x_range
+    ylim = y_range
+    fW = Frame_Width * cX
+    fH = Frame_Height * cY
+    fX = Frame_Left * cX
+    fY = (1 - Frame_Bottom) * cY
     var n = data.x.length
     if(n !== data.y.length){
         print("incompatible arrays")
         return;
     }
-    c.beginPath()
-    GoTo(data.x[0],data.y[0])
-    for(var i=1;i<data.x.length;i++){
-        LineTo(data.x[i],data.y[i])
+
+    switch (data.type) {
+
+        case "scatter": 
+            for(var i=0;i<n;i++){
+                GoTo(data.x[i],data.y[i])
+                Dot()
+            }
+            c.stroke()
+            break;
+
+        case "bar":
+            for(var i=0;i<n;i++){
+                Rect(data.x[i],0,data.width,data.y[i])
+            }
+            break;
+
+        case "line":
+        case undefined:
+            c.beginPath()
+            GoTo(data.x[0],data.y[0])
+            for(var i=1;i<data.x.length;i++){
+                LineTo(data.x[i],data.y[i])
+            }
+            c.stroke()
+            break;
+
+        default:
+            print("Unrecognised type for plot")
     }
-    c.stroke()
-    var txt = `(${xlim[0]},${ylim[0]})`
-    GoTo(xlim[0],ylim[0])
-    c.fillText(txt,X-5*(txt.length),Y+20)
-    txt = `(${xlim[1]},${ylim[1]})`
-    GoTo(xlim[1],ylim[1])
-    c.fillText(txt,X,Y)
+
+    if(frame){
+        c.strokeRect(fX,fY-fH,fW,fH)
+        var txt = `(${xlim[0]},${ylim[0]})`
+        GoTo(xlim[0],ylim[0])
+        c.fillText(txt,X-5*(txt.length),Y+20)
+        txt = `(${xlim[1]},${ylim[1]})`
+        GoTo(xlim[1],ylim[1])
+        c.fillText(txt,X,Y)
+    }
 }
 function CoE(){
     if(isCreate){
@@ -461,12 +504,6 @@ for (var m in modes){
 window.onresize=resize
 bList["undo"].style.opacity = 0.5
 bList["redo"].style.opacity = 0.5
-can.addEventListener("pointerup",function(e){
-    e.preventDefault()
-    addStages()
-    bList["undo"].style.opacity = 1
-    bList["redo"].style.opacity = 0.5
-})
 resize()
 if(!navigator.userAgent.match(/Android/i)){
     bList.code.click()   
