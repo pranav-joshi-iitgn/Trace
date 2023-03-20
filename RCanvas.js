@@ -489,7 +489,7 @@ function zOut(){
 
 }
 function full(){
-    document.body.requestFullscreen()
+    document.documentElement.requestFullscreen()
 }
 var actions = {
     full,
