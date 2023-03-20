@@ -204,7 +204,6 @@ can.ontouchstart = function(e) {
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
-    if(!md){return;}
     getPos(e);
     Dot(c,X,Y,r); 
     pathX.push(X)
@@ -212,7 +211,7 @@ can.ontouchmove = function(e) {
     e.preventDefault();
 }
 window.ontouchend = function(){
-    if(!md){return;}
+    if(md){
     let l = pathX.length
     if(l===0){return;}
     c.beginPath()
@@ -222,6 +221,8 @@ window.ontouchend = function(){
     }
     c.stroke()
     addStages()
+    }
+    md = false
 }} else {
 //mouse
 can.onmousedown = function(e) {
@@ -267,6 +268,7 @@ can.ontouchstart = can.onmousedown = function(e) {
     getPos(e)
     X0 = X
     Y0 = Y
+    e.preventDefault()
 }
 window.ontouchend = window.onmouseup = function(e){
     if(md){
