@@ -34,6 +34,7 @@ var isFill=false
 var editor = false
 var fingerDrawing = true
 var bList = {}
+var z = 1
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(isFill){
         c.lineWidth = 0
@@ -437,6 +438,9 @@ function resize(s=1-cW,Top=0,Bottom=0){
     cW = 1-s
     stages[currentStage] = snap()
     console.log(cX,cY)
+    z = 1
+    can.style.transform = `scale(${z},${z})`
+    glass.style.transform = `scale(${z},${z})`
     cX = innerWidth
     cY = innerHeight
     fX = 0 
@@ -462,6 +466,18 @@ function resize(s=1-cW,Top=0,Bottom=0){
     put(stages[currentStage],0,0)
     Remember()
 }
+function zIn(){
+    z += 1
+    can.style.transform = `scale(${z},${z})`
+    glass.style.transform = `scale(${z},${z})`
+
+}
+function zOut(){
+    z -= 1
+    can.style.transform = `scale(${z},${z})`
+    glass.style.transform = `scale(${z},${z})`
+
+}
 var actions = {
     run,
     Del,
@@ -471,6 +487,8 @@ var actions = {
     Next,
     Last,
     clear,
+    zIn,
+    zOut,
 }
 var toggles = {
     code,
@@ -481,6 +499,8 @@ var modes = {
     fill,
 }
 var buttonHigh = {
+    zIn:true,
+    zOut:true,
     Del:false,
     code:false,
     run:false,
