@@ -488,7 +488,11 @@ function zOut(){
     glass.style.transform = `scale(${z},${z})`
 
 }
+function full(){
+    document.body.requestFullscreen()
+}
 var actions = {
+    full,
     run,
     Del,
     undo,
@@ -509,6 +513,7 @@ var modes = {
     fill,
 }
 var buttonHigh = {
+    full:false,
     zIn:true,
     zOut:true,
     Del:false,
