@@ -166,17 +166,27 @@ function getPos(e) {
     if (e.touches) {
         if (e.touches.length == 1) { // Only deal with one finger
             var touch = e.touches[0]; // Get the information for finger #1
-            X=touch.pageX
-            Y=touch.pageY
+            X=touch.pageX /z
+            Y=touch.pageY /z
         }
     }
     else if (e.offsetX) {
         console.log("offset")
+        console.log(e.offsetX + "," + e.offsetY)
+        console.log("layerX,layerY")
+        console.log(e.layerX + "," + e.layerY)
+        console.log("pageX,pageY")
+        console.log(e.pageX + "," + e.pageY)
         X = e.offsetX;
         Y = e.offsetY;
     }
     else if (e.layerX) {
         console.log("layerX,layerY")
+        console.log(e.layerX + "," + e.layerY)
+        console.log("offset")
+        console.log(e.offsetX + "," + e.offsetY)
+        console.log("pageX,pageY")
+        console.log(e.pageX + "," + e.pageY)
         X = e.layerX;
         Y = e.layerY;
     }
