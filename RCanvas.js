@@ -378,6 +378,26 @@ function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH
         c.fillText(txt,X,Y)
     }
 }
+function fplot(x_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY){
+    print("fplot running")
+    var ymin = f(x_range[0])
+    var ymax = f(x_range[1])
+    var dx = (x_range[1] - x_range[0])/n
+    var x = []
+    var y = []
+    for(var i=0;i<=n;i++){
+        y.push(f(x_range[0] + dx*i))
+        x.push(x_range[0] + dx*i)
+        if(y[i]>ymax){ymax = y[i]}
+        if(y[i]<ymin){ymin = y[i]}
+    }
+    data = {
+        "x":x,
+        "y":y,
+        "type":"line",
+    }
+    plot(data,x_range,[ymin,ymax],FW,FH,FL,FB,true)
+}
 function CoE(){
     if(isCreate){
         Erase()
