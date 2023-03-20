@@ -244,7 +244,7 @@ window.onmouseup = function(){
     md=false;
 }
 can.onmousemove = function(e){ 
-    Remember()
+    //Remember()
     getPos(e);
     if (md) { 
         c.lineTo(X,Y) 
@@ -284,7 +284,7 @@ can.ontouchmove = can.onmousemove = function(e){
     getPos(e);
     if (md) { 
         c.moveTo(X,Y)
-        Remember()
+        //Remember()
         g.fillRect(X0,Y0,X-X0,Y-Y0)
     }
 }
