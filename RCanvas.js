@@ -21,7 +21,6 @@ var ew = 20*r
 var Color = "black"
 var Font = "20px serif"
 var X0=0,Y0=0,X,Y
-var pos = {"X":X,"Y":Y}
 var pathX,pathY
 var saves = []
 var currentSlide = 1
@@ -164,6 +163,7 @@ function Dot(ctx=c,x=X,y=Y,size=r) {
 }
 function getPos(e) {
     if (e.touches) {
+        if(e.touches.length > 1){return false}
         if (e.touches.length == 1) { // Only deal with one finger
             var touch = e.touches[0]; // Get the information for finger #1
             X=touch.pageX /z
@@ -190,9 +190,7 @@ function getPos(e) {
         X = e.layerX;
         Y = e.layerY;
     }
-    pos.X = X
-    pos.Y = Y
-    return pos
+    return true
 }
 function Create(){
     c.globalCompositeOperation = "source-over"
@@ -207,17 +205,17 @@ if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
 can.ontouchstart = function(e) {
     if(e.touches[0].type=="direct" && !fingerDrawing){return;}
+    if(!getPos(e)){return;}
     md = true
     pathX=[];
     pathY=[];
-    getPos(e);
     Dot(c,X,Y,r);
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
-    getPos(e);
+    if(!getPos(e)){return;};
     Dot(c,X,Y,r); 
     pathX.push(X)
     pathY.push(Y)
@@ -277,8 +275,8 @@ window.ontouchend=function(){}
 }
 function fill(){
 can.ontouchstart = can.onmousedown = function(e) {
+    if(!getPos(e)){return;}
     md=true;
-    getPos(e)
     X0 = X
     Y0 = Y
     e.preventDefault()
@@ -294,7 +292,7 @@ window.ontouchend = window.onmouseup = function(e){
 }
 can.ontouchmove = can.onmousemove = function(e){ 
     g.clearRect(X0,Y0,X-X0,Y-Y0)
-    getPos(e);
+    if(!getPos(e)){return;}
     if (md) { 
         c.moveTo(X,Y)
         //Remember()
