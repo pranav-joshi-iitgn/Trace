@@ -485,7 +485,6 @@ function full(){
     document.documentElement.requestFullscreen()
 }
 var actions = {
-    full,
     run,
     Del,
     undo,
@@ -506,7 +505,6 @@ var modes = {
     fill,
 }
 var buttonHigh = {
-    full:false,
     zIn:true,
     zOut:true,
     Del:false,
@@ -563,4 +561,5 @@ resize()
 if(!navigator.userAgent.match(/Android/i)){
     bList.code.click()   
 }
+I.value = "full()"
 bList.draw.click()
