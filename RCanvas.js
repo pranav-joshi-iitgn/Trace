@@ -146,11 +146,11 @@ function clear(){
 function run(){
     let s = I.value
     eval(s);
-    console.log(s)
+    //console.log(s)
     addStages()
 }
 function print(t){
-    T.innerText = JSON.stringify(t)
+    T.value = JSON.stringify(t)
     console.log(t)
 }
 function Dot(ctx=c,x=X,y=Y,size=r) {
@@ -171,22 +171,22 @@ function getPos(e) {
         }
     }
     else if (e.offsetX) {
-        console.log("offset")
-        console.log(e.offsetX + "," + e.offsetY)
-        console.log("layerX,layerY")
-        console.log(e.layerX + "," + e.layerY)
-        console.log("pageX,pageY")
-        console.log(e.pageX + "," + e.pageY)
+        //console.log("offset")
+        //console.log(e.offsetX + "," + e.offsetY)
+        //console.log("layerX,layerY")
+        //console.log(e.layerX + "," + e.layerY)
+        //console.log("pageX,pageY")
+        //console.log(e.pageX + "," + e.pageY)
         X = e.offsetX;
         Y = e.offsetY;
     }
     else if (e.layerX) {
-        console.log("layerX,layerY")
-        console.log(e.layerX + "," + e.layerY)
-        console.log("offset")
-        console.log(e.offsetX + "," + e.offsetY)
-        console.log("pageX,pageY")
-        console.log(e.pageX + "," + e.pageY)
+        //console.log("layerX,layerY")
+        //console.log(e.layerX + "," + e.layerY)
+        //console.log("offset")
+        //console.log(e.offsetX + "," + e.offsetY)
+        //console.log("pageX,pageY")
+        //console.log(e.pageX + "," + e.pageY)
         X = e.layerX;
         Y = e.layerY;
     }
@@ -440,7 +440,7 @@ function code(){
 function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
-    console.log(cX,cY)
+    //console.log(cX,cY)
     if(canResize){
         z = 1
         can.style.transform = `scale(${z},${z})`
