@@ -2,6 +2,7 @@ const can = document.getElementById("C")
 const glass = document.getElementById("G")
 const I = document.getElementById("I")
 const T = document.getElementById("T")
+const D = document.getElementById("D")
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
 const rect = can.getBoundingClientRect()
@@ -436,7 +437,7 @@ function code(){
         T.style.visibility = "hidden"
         I.style.visibility = "hidden"
     } else {
-        resize(0.3)
+        resize(0.5)
         T.style.visibility = "visible"
         I.style.visibility = "visible"
     }
@@ -460,10 +461,10 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     stages[0] = snap()
     glass.width  = can.width  = cX
     glass.height = can.height = cY
-    I.style.right = T.style.right = `${cW*100}%`
-    for(var b in bList){
-        bList[b].style.left = `${(1-cW)*100 + 1}%`
-    }
+    D.style.right = I.style.right = T.style.right = `${cW*100}%`
+    //for(var b in bList){
+    //    bList[b].style.left = `${(1-cW)*100 + 1}%`
+    //}
     for (var b in buttonHigh){
         if(buttonHigh[b]){
             bList[b].style.top = `${Top}px`
@@ -476,6 +477,13 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     put(stages[currentStage],0,0)
     Remember()
 }
+function Div(){
+    if(D.style.zIndex == 3){
+        D.style.zIndex = 5
+    } else {
+        D.style.zIndex = 3
+    }    
+}
 function zIn(){
     z += 1
     can.style.transform = `scale(${z},${z})`
@@ -483,6 +491,7 @@ function zIn(){
 
 }
 function zOut(){
+    if(z=1){return;}
     z -= 1
     can.style.transform = `scale(${z},${z})`
     glass.style.transform = `scale(${z},${z})`
@@ -580,5 +589,5 @@ for(var b in bList){
     im.src = "images/" + b + ".png"
     im.alt = bList[b].id
 }
-I.value = "full()"
+I.value = "full();Div();"
 bList.draw.click()

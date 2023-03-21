@@ -13,7 +13,7 @@
             background: #f8f9f8;
             border: 0px solid black;
             border-radius: 30%;
-            z-index: 4;
+            z-index: 6;
             left: 0;
         }
         button:hover{
@@ -35,10 +35,10 @@
         }
         .text{
             position: fixed;
-            z-index: 3;
+            z-index: 4;
             border: #22205c;
             border-radius: 10px;
-            left:0;
+            left:30px;
             color: whitesmoke;
 
         }
@@ -63,6 +63,14 @@
             bottom:0;
             height: 20%;
         }
+        #D{
+            position: fixed;
+            z-index: 3;
+            height: 100%;
+            left: 0;
+            bottom: 0;
+            background-color: antiquewhite;
+        }
         
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
@@ -72,6 +80,7 @@
 <canvas id="G" class="layer"></canvas>
 <textarea type="text" id="I" class="text"></textarea>
 <textarea id="T" class="text" readonly>Output</textarea>
+<div id="D"></div>
 </body>
 <script src="RCanvas.js"></script>
 </html>
