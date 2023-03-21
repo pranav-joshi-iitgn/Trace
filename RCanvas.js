@@ -139,8 +139,8 @@ function redo(){
     put(stages[currentStage],0,0)
     bList["undo"].style.opacity = 1
 }
-function clear(){
-    c.clearRect(0,0,cX,cY)
+function clear(ctx=c){
+    ctx.clearRect(0,0,cX,cY)
     addStages()
 }
 function run(){
@@ -202,14 +202,14 @@ can.ontouchstart = function(e) {
     md = true
     pathX=[];
     pathY=[];
-    Dot(c,X,Y,r);
+    Dot(g,X,Y,r);
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
     if(!getPos(e)){return;};
-    Dot(c,X,Y,r); 
+    Dot(g,X,Y,r); 
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
@@ -224,6 +224,7 @@ window.ontouchend = function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
+    clear(g)
     addStages()
     }
     md = false
@@ -244,7 +245,7 @@ window.onmouseup = function(){
         addStages()
     }
     g.stroke()
-    g.clearRect(0,0,cX,cY)
+    clear(g)
     md=false;
 }
 can.onmousemove = function(e){ 
