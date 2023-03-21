@@ -201,7 +201,7 @@ function draw(){
 if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
 can.ontouchstart = function(e) {
-    if(e.touches[0].type=="direct" && !fingerDrawing){return;}
+    if(e.touches[0].radiusX>0 && !fingerDrawing){return;}
     if(!getPos(e)){return;}
     md = true
     pathX=[];
