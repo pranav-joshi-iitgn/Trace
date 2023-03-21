@@ -461,11 +461,11 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     }
     for (var b in buttonHigh){
         if(buttonHigh[b]){
-            bList[b].style.top = `${Top}%`
-            Top += 5
+            bList[b].style.top = `${Top}px`
+            Top += 30
         } else{
-            bList[b].style.bottom = `${Bottom}%`
-            Bottom += 5
+            bList[b].style.bottom = `${Bottom}px`
+            Bottom += 30
         }
     }
     put(stages[currentStage],0,0)
@@ -507,24 +507,25 @@ var modes = {
     fill,
 }
 var buttonHigh = {
+    
     zIn:true,
     zOut:true,
-    Del:false,
-    code:false,
-    run:false,
-    clear:true,
-    undo:true,
-    redo:true,
-    save:true,
-    Next:true,
-    Last:true,
     Eraser:true,
     draw:true,
     fill:true,
+    undo:true,
+    redo:true,
+    clear:true,
+
+    code:false,
+    run:false,
+    Del:false,
+    save:false,
+    Next:false,
+    Last:false,
 }
 function createButton(id,fun){
     var But = document.createElement("button")
-    But.innerText = id
     But.id = id
     But.color = "#f8f9f8"
     document.body.appendChild(But)
@@ -562,6 +563,17 @@ bList["redo"].style.opacity = 0.5
 resize()
 if(!navigator.userAgent.match(/Android/i)){
     bList.code.click()   
+}
+for(var b in bList){
+    im = new Image()
+    bList[b].appendChild(im)
+    im.style.width = "100%"
+    im.style.height = "100%"
+    im.style.zIndex = 3
+    im.style.pointerEvents = "none";
+    im.style.opacity = 0.5
+    im.src = "images/" + b + ".png"
+    im.alt = bList[b].id
 }
 I.value = "full()"
 bList.draw.click()
