@@ -228,9 +228,9 @@ window.ontouchend = function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
-    clear(g)
     addStages()
     }
+    clear(g)
     md = false
 }} else {
 //mouse
