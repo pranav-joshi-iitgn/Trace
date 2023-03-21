@@ -38,11 +38,11 @@ function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(isFill){
         c.lineWidth = 0
     } else if(isCreate){
-        c.lineWidth = lw = Line_width
+        g.lineWidth = c.lineWidth = lw = Line_width
+        g.lineWidth *= 3
     } else {
-        c.lineWidth = ew = Eraser_width
+        g.lineWidth = c.lineWidth = ew = Eraser_width
     }
-    g.lineWidth = ew
     c.lineCap = 'round'
     g.lineCap = 'round'
     g.fillStyle = 'rgb(255, 99, 71)'
@@ -153,8 +153,11 @@ function print(t){
     T.value = JSON.stringify(t)
     console.log(t)
 }
-function Dot(ctx=c,x=X,y=Y,size=r) {
+function Dot(ctx=c,x=X,y=Y,size=false) {
     var l = ctx.lineWidth
+    if(size===false){
+        size = l/2
+    }
     ctx.lineWidth = 0
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI*2, true);
@@ -202,14 +205,14 @@ can.ontouchstart = function(e) {
     md = true
     pathX=[];
     pathY=[];
-    Dot(g,X,Y,r);
+    Dot(g,X,Y);
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
     if(!getPos(e)){return;};
-    Dot(g,X,Y,r); 
+    Dot(g,X,Y); 
     pathX.push(X)
     pathY.push(Y)
     e.preventDefault();
