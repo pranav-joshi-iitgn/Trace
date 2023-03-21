@@ -491,7 +491,7 @@ function zIn(){
 
 }
 function zOut(){
-    if(z=1){return;}
+    if(z==1){return;}
     z -= 1
     can.style.transform = `scale(${z},${z})`
     glass.style.transform = `scale(${z},${z})`
