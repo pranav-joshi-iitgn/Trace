@@ -154,12 +154,13 @@ function print(t){
     console.log(t)
 }
 function Dot(ctx=c,x=X,y=Y,size=r) {
+    var l = ctx.lineWidth
     ctx.lineWidth = 0
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI*2, true);
     ctx.closePath();
     ctx.fill();
-    ctx.lineWidth = lw
+    ctx.lineWidth = l
 }
 function getPos(e) {
     if (e.touches) {
