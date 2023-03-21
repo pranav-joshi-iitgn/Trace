@@ -437,13 +437,15 @@ function code(){
     }
     editor = !editor
 }
-function resize(s=1-cW,Top=0,Bottom=0){
+function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
     console.log(cX,cY)
-    z = 1
-    can.style.transform = `scale(${z},${z})`
-    glass.style.transform = `scale(${z},${z})`
+    if(canResize){
+        z = 1
+        can.style.transform = `scale(${z},${z})`
+        glass.style.transform = `scale(${z},${z})`
+    }
     cX = innerWidth
     cY = innerHeight
     fX = 0 
@@ -459,11 +461,11 @@ function resize(s=1-cW,Top=0,Bottom=0){
     }
     for (var b in buttonHigh){
         if(buttonHigh[b]){
-            bList[b].style.top = `${Top}px`
-            Top += 30
+            bList[b].style.top = `${Top}%`
+            Top += 5
         } else{
-            bList[b].style.bottom = `${Bottom}px`
-            Bottom += 30
+            bList[b].style.bottom = `${Bottom}%`
+            Bottom += 5
         }
     }
     put(stages[currentStage],0,0)
