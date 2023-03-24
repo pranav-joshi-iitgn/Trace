@@ -84,8 +84,27 @@ function pdf(start=1,stop=saves.length-1){
         if(i==stop){break;}
         doc.addPage()
     }
-
     doc.save(`DrawingPad_${(new Date()).toString()}`)
+}
+function save_locally(start=1,stop=saves.length-1){
+    for(var i=start;i<=stop;i++){
+        load(i)
+        img = can.toDataURL("image/png")
+        localStorage.setItem(i.toString(),img)
+    }
+}
+function load_local(start,stop){
+    images = {}
+    load(start)
+    for(var i=start;i<=stop;i++){
+        images[i.toString()] = new Image()
+        images[i.toString()].onload = function(){
+            c.drawImage(images[i.toString()],0,0)
+            save()
+            Next()
+        }
+        images[i.toString()].src = localStorage.getItem(i.toString())
+    }
 }
 function save(n=currentSlide){
     if(n<=0){
@@ -228,9 +247,9 @@ window.ontouchend = function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
-    addStages()
-    }
+    //addStages()
     clear(g)
+    }
     md = false
 }} else {
 //mouse
