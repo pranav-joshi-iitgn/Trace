@@ -232,6 +232,7 @@ can.ontouchstart = function(e) {
 }
 can.ontouchmove = function(e) { 
     if(!getPos(e)){return;};
+    if(!md){return;}
     Dot(g,X,Y); 
     pathX.push(X)
     pathY.push(Y)
@@ -618,6 +619,8 @@ keys = {
     "ArrowLeft":"undo",
     "ArrowRight":"redo",
     "R":"run",
+    "+":"zIn",
+    "-":"zOut",
 }
 document.addEventListener("keydown",function(e){
     if(editor){
@@ -626,5 +629,5 @@ document.addEventListener("keydown",function(e){
     bList[keys[e.key]].click()
     e.preventDefault()
 })
-I.value = "full();\n fingerDrawing = False"
+I.value = "full();\n fingerDrawing = false"
 bList.draw.click()
