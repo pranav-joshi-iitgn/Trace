@@ -247,7 +247,6 @@ window.ontouchend = function(){
         c.lineTo(pathX[i],pathY[i])
     }
     c.stroke()
-    //addStages()
     clear(g)
     }
     md = false
@@ -265,10 +264,9 @@ can.onmousedown = function(e) {
 window.onmouseup = function(){
     if(md){
         c.stroke()
-        addStages()
+        clear(g)
+        g.stroke()
     }
-    g.stroke()
-    clear(g)
     md=false;
 }
 can.onmousemove = function(e){ 
@@ -608,5 +606,25 @@ for(var b in bList){
     im.src = "images/" + b + ".png"
     im.alt = bList[b].id
 }
+keys = {
+    "S":"save",
+    "D":"Del",
+    "c":"clear",
+    "n":"Next",
+    "l":"Last",
+    "d":"draw",
+    "f":"fill",
+    "e":"Eraser",
+    "ArrowLeft":"undo",
+    "ArrowRight":"redo",
+    "R":"run",
+}
+document.addEventListener("keydown",function(e){
+    if(editor){
+        return;
+    }
+    bList[keys[e.key]].click()
+    e.preventDefault()
+})
 I.value = "full();\n fingerDrawing = False"
 bList.draw.click()
