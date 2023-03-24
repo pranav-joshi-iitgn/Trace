@@ -608,5 +608,5 @@ for(var b in bList){
     im.src = "images/" + b + ".png"
     im.alt = bList[b].id
 }
-I.value = "full();Div();"
+I.value = "full();\n fingerDrawing = False"
 bList.draw.click()
