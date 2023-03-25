@@ -136,6 +136,18 @@ function show(i=500){
         }
     },i)
 }
+function funcAnim(f,n=100,T=5000,dt=false){
+    if(!dt){
+        dt = T/n
+    }
+    fa = setInterval(function(){
+        if(n<=0){
+            clearInterval(fa)
+        }
+        f();
+        n--;
+    },dt)
+}
 function Copy(n=currentSlide){
     save()
     saves.push(saves[n])
