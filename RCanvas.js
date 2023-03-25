@@ -1,10 +1,12 @@
 const can = document.getElementById("C")
 const glass = document.getElementById("G")
+const onion = document.getElementById("O")
 const I = document.getElementById("I")
 const T = document.getElementById("T")
 const D = document.getElementById("D")
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
+const o = onion.getContext('2d');
 const rect = can.getBoundingClientRect()
 var cW = 1
 var cH = 1
@@ -33,6 +35,7 @@ var isCreate=true
 var isFill=false
 var editor = false
 var fingerDrawing = true
+var Onion = false
 var bList = {}
 var z = 1
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
@@ -55,8 +58,8 @@ function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
 function snap(){
     return c.getImageData(0,0,cX,cY)
 }
-function put(img,dx=0,dy=0){
-    c.putImageData(img,dx,dy)
+function put(img,dx=0,dy=0,ctx = c){
+    ctx.putImageData(img,dx,dy)
 }
 function load(n=currentSlide-1){
     if(saves[n]){
@@ -65,7 +68,7 @@ function load(n=currentSlide-1){
         c.clearRect(0,0,cX,cY)
     }
     addStages()
-    print(`Slide no. ${n}`)
+    print(`Slide ${n} from ${saves.length}`)
     currentSlide = n
 }
 function Last(){
@@ -107,6 +110,12 @@ function load_local(start,stop){
     }
 }
 function save(n=currentSlide){
+    if(Onion){
+        put(snap(),0,0,o)
+        print("onion")
+    } else {
+        o.clearRect(0,0,cX,cY)
+    }
     if(n<=0){
         print("Remember: Only slides with positive integer indices will be used to make pdf")
     }
@@ -115,6 +124,7 @@ function save(n=currentSlide){
 }
 function Next(){
     currentSlide++
+    currentStage=0
     load(currentSlide)
 }
 function show(i=500){
@@ -464,11 +474,9 @@ function code(){
 function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
-    //console.log(cX,cY)
     if(canResize){
         z = 1
-        can.style.transform = `scale(${z},${z})`
-        glass.style.transform = `scale(${z},${z})`
+        onion.style.transform = glass.style.transform = can.style.transform = `scale(${z},${z})`
     }
     cX = innerWidth
     cY = innerHeight
@@ -477,12 +485,9 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     fW = cX
     fH = cY
     stages[0] = snap()
-    glass.width  = can.width  = cX
-    glass.height = can.height = cY
+    onion.width  = glass.width  = can.width  = cX
+    onion.height = glass.height = can.height = cY
     D.style.right = I.style.right = T.style.right = `${cW*100}%`
-    //for(var b in bList){
-    //    bList[b].style.left = `${(1-cW)*100 + 1}%`
-    //}
     for (var b in buttonHigh){
         if(buttonHigh[b]){
             bList[b].style.top = `${Top}px`

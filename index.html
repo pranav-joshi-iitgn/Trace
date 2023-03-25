@@ -44,13 +44,18 @@
         }
         #C{
             z-index: 1;
-            background-color:white;
             
         }
         #G{
             z-index: 2;
             pointer-events: none;
             opacity: 0.2;
+        }
+        #O{
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.2;
+            background-color:white;
         }
         #I{
             background-color:#041e33;
@@ -78,6 +83,7 @@
 <body>
 <canvas id="C" class="layer"></canvas>
 <canvas id="G" class="layer"></canvas>
+<canvas id="O" class="layer"></canvas>
 <textarea type="text" id="I" class="text"></textarea>
 <textarea id="T" class="text" readonly>Output</textarea>
 <div id="D"></div>
