@@ -454,6 +454,48 @@ function fplot(x_range,y_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY,Fr
     }
     plot(data,x_range,y_range,FW,FH,FL,FB,Frame)
 }
+function meshPlot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
+    xlim = x_range
+    ylim = y_range
+    fW = Frame_Width * cX
+    fH = Frame_Height * cY
+    fX = Frame_Left * cX
+    fY = (1 - Frame_Bottom) * cY
+    var m = data.x.length
+    if(m !== data.y.length){
+        print("incompatible arrays")
+        return;
+    }
+    var n = data.x[0].length
+    if(n !== data.y[0].length){
+        print("incompatible arrays")
+        return;
+    }
+    c.beginPath()
+    for(var i=0;i<m;i++){
+        GoTo(data.x[i][0],data.y[i][0])
+        for(var j=1;j<n;j++){
+            LineTo(data.x[i][j],data.y[i][j])
+        }
+    }
+    for(var j=0;j<n;j++){
+        GoTo(data.x[0][j],data.y[0][j])
+        for(var i=1;i<n;i++){
+            LineTo(data.x[i][j],data.y[i][j])
+        }
+    }
+    c.stroke()
+
+    if(frame){
+        c.strokeRect(fX,fY-fH,fW,fH)
+        var txt = `(${xlim[0]},${ylim[0]})`
+        GoTo(xlim[0],ylim[0])
+        c.fillText(txt,X-5*(txt.length),Y+20)
+        txt = `(${xlim[1]},${ylim[1]})`
+        GoTo(xlim[1],ylim[1])
+        c.fillText(txt,X,Y)
+    }
+}
 function Eraser(){
     if(isCreate){
         c.globalCompositeOperation = "destination-out";
