@@ -27,17 +27,18 @@ var X0=0,Y0=0,X,Y
 var pathX,pathY
 var saves = []
 var currentSlide = 1
-var fX = 0 
-var fY = cY
-var fW = cX
-var fH = cY
+var fX = 50 
+var fY = cY - 50
+var fW = cX - 100
+var fH = cY - 100
 var isCreate=true
 var isFill=false
 var editor = false
 var fingerDrawing = true
 var Onion = false
 var bList = {}
-var z = 1
+var scale = 1
+var tempD = {}
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(isFill){
         c.lineWidth = 0
@@ -454,7 +455,7 @@ function fplot(x_range,y_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY,Fr
     }
     plot(data,x_range,y_range,FW,FH,FL,FB,Frame)
 }
-function meshPlot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
+function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen=0,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
     xlim = x_range
     ylim = y_range
     fW = Frame_Width * cX
@@ -471,18 +472,25 @@ function meshPlot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Heigh
         print("incompatible arrays")
         return;
     }
+    var z = 1
     c.beginPath()
     for(var i=0;i<m;i++){
-        GoTo(data.x[i][0],data.y[i][0])
+        if(data.z){var z = (data.z[i][0]-z_eye)/(z_screen-z_eye)}
+        GoTo(data.x[i][0]/z,data.y[i][0]/z)
         for(var j=1;j<n;j++){
-            LineTo(data.x[i][j],data.y[i][j])
+            if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
+            LineTo(data.x[i][j]/z,data.y[i][j]/z)
         }
     }
+    if(!contour){
     for(var j=0;j<n;j++){
-        GoTo(data.x[0][j],data.y[0][j])
+        if(data.z){var z = (data.z[0][j]-z_eye)/(z_screen-z_eye)}
+        GoTo(data.x[0][j]/z,data.y[0][j]/z)
         for(var i=1;i<n;i++){
-            LineTo(data.x[i][j],data.y[i][j])
+            if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
+            LineTo(data.x[i][j]/z,data.y[i][j]/z)
         }
+    }
     }
     c.stroke()
 
@@ -494,6 +502,29 @@ function meshPlot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Heigh
         txt = `(${xlim[1]},${ylim[1]})`
         GoTo(xlim[1],ylim[1])
         c.fillText(txt,X,Y)
+    }
+}
+function LT(data,M){
+    print("trying")
+    for(var i=0;i<data.x.length;i++){
+        if(typeof(data.x[i])==='object'){
+            tempD.x = data.x[i]
+            tempD.y = data.y[i]
+            tempD.z = data.z[i]
+            LT(tempD,M)
+        }else{
+            var x = data.x[i]
+            var y = data.y[i]
+            if(data.z){
+                var z = data.z[i]
+                data.x[i] = M[0][0]*x + M[0][1]*y + M[0][2]*z
+                data.y[i] = M[1][0]*x + M[1][1]*y + M[1][2]*z
+                data.z[i] = M[2][0]*x + M[2][1]*y + M[2][2]*z
+            }else{
+                data.x[i] = M[0][0]*x + M[0][1]*y
+                data.y[i] = M[1][0]*x + M[1][1]*y
+            }
+        }
     }
 }
 function Eraser(){
@@ -529,15 +560,15 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
     if(canResize){
-        z = 1
-        onion.style.transform = glass.style.transform = can.style.transform = `scale(${z},${z})`
+        scale = 1
+        onion.style.transform = glass.style.transform = can.style.transform = `scale(${scale},${scale})`
     }
     cX = innerWidth
     cY = innerHeight
-    fX = 0 
-    fY = cY
-    fW = cX
-    fH = cY
+    fX = 50 
+    fY = cY - 50
+    fW = cX - 100
+    fH = cY - 100
     stages[0] = snap()
     onion.width  = glass.width  = can.width  = cX
     onion.height = glass.height = can.height = cY
@@ -562,16 +593,16 @@ function Div(){
     }    
 }
 function zIn(){
-    z += 1
-    can.style.transform = `scale(${z},${z})`
-    glass.style.transform = `scale(${z},${z})`
+    scale += 1
+    can.style.transform = `scale(${scale},${scale})`
+    glass.style.transform = `scale(${scale},${scale})`
 
 }
 function zOut(){
-    if(z==1){return;}
-    z -= 1
-    can.style.transform = `scale(${z},${z})`
-    glass.style.transform = `scale(${z},${z})`
+    if(scale==1){return;}
+    scale -= 1
+    can.style.transform = `scale(${scale},${scale})`
+    glass.style.transform = `scale(${scale},${scale})`
 
 }
 function full(){
