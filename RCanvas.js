@@ -496,7 +496,7 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     for(var j=0;j<n;j++){
         if(data.z){var z = (data.z[0][j]-z_eye)/(z_screen-z_eye)}
         GoTo(data.x[0][j]/z,data.y[0][j]/z)
-        for(var i=1;i<n;i++){
+        for(var i=1;i<m;i++){
             if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
             LineTo(data.x[i][j]/z,data.y[i][j]/z)
         }
