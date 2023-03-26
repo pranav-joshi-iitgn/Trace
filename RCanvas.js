@@ -584,6 +584,42 @@ function RM(A,W){
     }
     return M
 }
+function grid(m=10,n=10,type="3d"){
+    m -= 1
+    n -= 1
+    if(type==="2d"){
+        data = {x:[],y:[]}
+        for(var i=0;i<=m;i++){
+            var x = []
+            var y = []
+            for(var j=0;j<=n;j++){
+                x.push((j*xlim[1]+(n-j)*xlim[0])/n)
+                y.push((i*ylim[1]+(m-i)*ylim[0])/m)
+            }
+            data.x.push(x)
+            data.y.push(y)
+        }
+        return data
+    }
+    if(type==="3d"){
+        data = {x:[],y:[],z:[]}
+        for(var i=0;i<=m;i++){
+            var x = []
+            var y = []
+            var z = []
+            for(var j=0;j<=n;j++){
+                x.push((j*xlim[1]+(n-j)*xlim[0])/n)
+                y.push((i*ylim[1]+(m-i)*ylim[0])/m)
+                z.push(0)
+            }
+            data.x.push(x)
+            data.y.push(y)
+            data.z.push(z)
+        }
+        return data
+    }
+
+}
 function Eraser(){
     if(isCreate){
         c.globalCompositeOperation = "destination-out";
