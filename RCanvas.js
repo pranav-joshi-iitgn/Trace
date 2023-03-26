@@ -536,6 +536,43 @@ function LT(data,M){
         }
     }
 }
+function Transform(data,f){
+    for(var i=0;i<data.x.length;i++){
+        if(typeof(data.x[i])==='object'){
+            tempD.x = data.x[i]
+            if(data.y){
+                tempD.y = data.y[i]
+            }
+            if(data.z){
+                tempD.z = data.z[i]
+            }
+            Transform(tempD,f)
+        } else {
+            f(data,i)
+        }
+}
+}
+function Matrix(M){
+    return (function(data,i){
+        if(M.length===2){
+            //for(var i=0;i<data.x.length;i++){
+                var x = data.x[i]
+                var y = data.y[i]
+                data.x[i] = M[0][0]*x + M[0][1]*y
+                data.y[i] = M[1][0]*x + M[1][1]*y
+            //}
+        } else {
+            //for(var i=0;i<data.x.length;i++){
+                var x = data.x[i]
+                var y = data.y[i]
+                var z = data.z[i]
+                data.x[i] = M[0][0]*x + M[0][1]*y + M[0][2]*z
+                data.y[i] = M[1][0]*x + M[1][1]*y + M[1][2]*z
+                data.z[i] = M[2][0]*x + M[2][1]*y + M[2][2]*z
+            //}
+        }
+    })
+}
 function RM(A,W){
     var cA = Math.cos(A)
     var sA = Math.sin(A) 
