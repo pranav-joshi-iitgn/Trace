@@ -527,6 +527,36 @@ function LT(data,M){
         }
     }
 }
+function RM(A,W){
+    var cA = Math.cos(A)
+    var sA = Math.sin(A) 
+    if(W){
+        var x = W[0]
+        var y = W[1]
+        var z = W[2]
+        var M = [[0,0,0],[0,0,0],[0,0,0]]
+        var r = (x*x + y*y + z*z)**0.5
+        x = x/r
+        y = y/r
+        z = z/r
+
+        M[0][0] =  cA + x*x*(1-cA)
+        M[0][1] = x*y*(1-cA) - z*sA
+        M[0][2] = x*y*(1-cA) + y*sA
+
+        M[1][0] = x*y*(1-cA) + z*sA
+        M[1][1] = cA + y*y*(1-cA)
+        M[1][2] = y*z*(1-cA) - x*sA
+
+        M[2][0] = x*z*(1-cA) - y*sA
+        M[2][1] = y*z*(1-cA) + x*sA
+        M[2][2] = cA + z*z*(1-cA)
+
+    } else {
+        var M = [[cA,-sA],[sA,cA]]
+    }
+    return M
+}
 function Eraser(){
     if(isCreate){
         c.globalCompositeOperation = "destination-out";
