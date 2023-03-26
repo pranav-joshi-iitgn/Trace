@@ -515,7 +515,6 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     }
 }
 function LT(data,M){
-    print("trying")
     for(var i=0;i<data.x.length;i++){
         if(typeof(data.x[i])==='object'){
             tempD.x = data.x[i]
