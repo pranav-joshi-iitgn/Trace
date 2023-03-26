@@ -514,27 +514,8 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
         c.fillText(txt,X,Y)
     }
 }
-function LT(data,M){
-    for(var i=0;i<data.x.length;i++){
-        if(typeof(data.x[i])==='object'){
-            tempD.x = data.x[i]
-            tempD.y = data.y[i]
-            tempD.z = data.z[i]
-            LT(tempD,M)
-        }else{
-            var x = data.x[i]
-            var y = data.y[i]
-            if(data.z){
-                var z = data.z[i]
-                data.x[i] = M[0][0]*x + M[0][1]*y + M[0][2]*z
-                data.y[i] = M[1][0]*x + M[1][1]*y + M[1][2]*z
-                data.z[i] = M[2][0]*x + M[2][1]*y + M[2][2]*z
-            }else{
-                data.x[i] = M[0][0]*x + M[0][1]*y
-                data.y[i] = M[1][0]*x + M[1][1]*y
-            }
-        }
-    }
+function RotM(A,W){
+    return Matrix(RM(A,W))
 }
 function Transform(data,f){
     for(var i=0;i<data.x.length;i++){
@@ -611,7 +592,7 @@ function Eraser(){
     }
     isCreate = !isCreate
     Remember()
-}  
+}
 function DoF(){
     if(isFill){
         draw()
