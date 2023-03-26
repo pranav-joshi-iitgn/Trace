@@ -25,11 +25,11 @@ var Color = "black"
 var Font = "20px serif"
 var X0=0,Y0=0,X,Y
 var pathX,pathY
-var saves = []
+var slides = []
 var currentSlide = 1
-var fX = 50 
+var fX = cX/2 + 30 
 var fY = cY - 50
-var fW = cX - 100
+var fW = cX/2  - 100
 var fH = cY - 100
 var isCreate=true
 var isFill=false
@@ -63,13 +63,13 @@ function put(img,dx=0,dy=0,ctx = c){
     ctx.putImageData(img,dx,dy)
 }
 function load(n=currentSlide-1){
-    if(saves[n]){
-        put(saves[n],0,0)
+    if(slides[n]){
+        put(slides[n],0,0)
     } else {
         c.clearRect(0,0,cX,cY)
     }
     addStages()
-    print(`Slide ${n} from ${saves.length}`)
+    T.value = `Slide ${n} from ${slides.length}`
     currentSlide = n
 }
 function Last(){
@@ -79,7 +79,7 @@ function Last(){
     }
     load()
 }
-function pdf(start=1,stop=saves.length-1){
+function pdf(start=1,stop=slides.length-1){
     var doc = new jsPDF('l')
     for(var i=start;;i++){
         load(i)
@@ -90,7 +90,7 @@ function pdf(start=1,stop=saves.length-1){
     }
     doc.save(`DrawingPad_${(new Date()).toString()}`)
 }
-function save_locally(start=1,stop=saves.length-1){
+function save_locally(start=1,stop=slides.length-1){
     for(var i=start;i<=stop;i++){
         load(i)
         img = can.toDataURL("image/png")
@@ -111,16 +111,18 @@ function load_local(start,stop){
     }
 }
 function save(n=currentSlide){
+    T.value = ""
     if(Onion){
         put(snap(),0,0,o)
-        print("onion")
+        print("Onion is on.")
     } else {
         o.clearRect(0,0,cX,cY)
+        print("Onion is off.")
     }
     if(n<=0){
-        print("Remember: Only slides with positive integer indices will be used to make pdf")
+        print("Remember: By default, only slides with positive integer indices will be used to make pdf.")
     }
-    saves[n] = snap()
+    slides[n] = snap()
     print(`Saved as slide no. ${n}`)
 }
 function Next(){
@@ -132,7 +134,7 @@ function show(i=500){
     currentSlide = 0
     ss = setInterval(function(){
         Next()
-        if(currentSlide>=saves.length){
+        if(currentSlide>=slides.length){
             clearInterval(ss)
         }
     },i)
@@ -151,15 +153,15 @@ function funcAnim(f,n=100,T=5000,dt=false){
 }
 function Copy(n=currentSlide){
     save()
-    saves.push(saves[n])
-    load(saves.length-1)
+    slides.push(slides[n])
+    load(slides.length-1)
 }
 function insert(){
-    saves.splice(currentSlide,0,snap())
+    slides.splice(currentSlide,0,snap())
 }
 function Del(n=currentSlide,howmany=1){
-    saves.splice(n,howmany)
-    load(saves.length)
+    slides.splice(n,howmany)
+    load(slides.length)
 }
 function undo(){
     if(currentStage==1){
@@ -186,14 +188,18 @@ function clear(ctx=c){
     ctx.clearRect(0,0,cX,cY)
     addStages()
 }
+function clrF(){
+    c.clearRect(fX,fY-fH,fW,fH)
+}
 function run(){
     let s = I.value
+    T.value = ""
     eval(s);
-    //console.log(s)
     addStages()
 }
 function print(t){
-    T.value = JSON.stringify(t)
+    if(typeof t !="string"){t = JSON.stringify(t)}
+    T.value += t + "\n"
     console.log(t)
 }
 function Dot(ctx=c,x=X,y=Y,size=false) {
@@ -376,6 +382,10 @@ function Rect(x,y,w,h){
 function point(x,y){
     GoTo(x,y)
     Dot()
+}
+function text(txt,x,y){
+    GoTo(x,y)
+    c.fillText(txt,X,Y)
 }
 function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
     xlim = x_range
@@ -595,9 +605,9 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     }
     cX = innerWidth
     cY = innerHeight
-    fX = 50 
+    fX = cX/2 + 30 
     fY = cY - 50
-    fW = cX - 100
+    fW = cX/2 - 120
     fH = cY - 100
     stages[0] = snap()
     onion.width  = glass.width  = can.width  = cX
@@ -637,6 +647,9 @@ function zOut(){
 }
 function full(){
     document.documentElement.requestFullscreen()
+}
+function esc(){
+    document.exitFullscreen()
 }
 var actions = {
     run,
@@ -743,9 +756,8 @@ keys = {
     "-":"zOut",
 }
 document.addEventListener("keydown",function(e){
-    if(editor){
-        return;
-    }
+    if(editor){return;}
+    if(e.key=="Escape"){esc();return;}
     bList[keys[e.key]].click()
     e.preventDefault()
 })
