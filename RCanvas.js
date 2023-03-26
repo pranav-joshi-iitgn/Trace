@@ -213,8 +213,8 @@ function getPos(e) {
         if(e.touches.length > 1){return false}
         if (e.touches.length == 1) { // Only deal with one finger
             var touch = e.touches[0]; // Get the information for finger #1
-            X=touch.pageX /z
-            Y=touch.pageY /z
+            X=touch.pageX /scale
+            Y=touch.pageY /scale
         }
     }
     else if (e.offsetX) {
