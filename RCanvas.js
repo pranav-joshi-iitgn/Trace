@@ -387,13 +387,9 @@ function text(txt,x,y){
     GoTo(x,y)
     c.fillText(txt,X,Y)
 }
-function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
+function plot(data,x_range=xlim,y_range=ylim,frame=false){
     xlim = x_range
     ylim = y_range
-    fW = Frame_Width * cX
-    fH = Frame_Height * cY
-    fX = Frame_Left * cX
-    fY = (1 - Frame_Bottom) * cY
     var n = data.x.length
     if(n !== data.y.length){
         print("incompatible arrays")
@@ -405,6 +401,7 @@ function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH
         case "scatter": 
             for(var i=0;i<n;i++){
                 GoTo(data.x[i],data.y[i])
+                if(data.color){c.fillStyle=data.color[i]}
                 Dot()
             }
             c.stroke()
@@ -413,6 +410,7 @@ function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH
         case "bar":
             for(var i=0;i<n;i++){
                 Rect(data.x[i],0,data.width,data.y[i])
+                if(data.color){c.fillStyle=data.color[i];c.fill()}
             }
             break;
 
@@ -429,18 +427,23 @@ function plot(data,x_range=xlim,y_range=ylim,Frame_Width = fW/cX,Frame_Height=fH
         default:
             print("Unrecognised type for plot")
     }
-
-    if(frame){
-        c.strokeRect(fX,fY-fH,fW,fH)
-        var txt = `(${xlim[0]},${ylim[0]})`
-        GoTo(xlim[0],ylim[0])
-        c.fillText(txt,X-5*(txt.length),Y+20)
-        txt = `(${xlim[1]},${ylim[1]})`
-        GoTo(xlim[1],ylim[1])
-        c.fillText(txt,X,Y)
-    }
+    Remember()
+    if(frame){Frame()}
 }
-function fplot(x_range,y_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY,Frame=true){
+function Frame(Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,Frame_Width = fW/cX,Frame_Height=fH/cY){
+    fW = Frame_Width * cX
+    fH = Frame_Height * cY
+    fX = Frame_Left * cX
+    fY = (1 - Frame_Bottom) * cY
+    c.strokeRect(fX,fY-fH,fW,fH)
+    var txt = `(${xlim[0]},${ylim[0]})`
+    GoTo(xlim[0],ylim[0])
+    c.fillText(txt,X-5*(txt.length),Y+20)
+    txt = `(${xlim[1]},${ylim[1]})`
+    GoTo(xlim[1],ylim[1])
+    c.fillText(txt,X,Y)
+}
+function fplot(x_range,y_range,n,f,frame=false){
     print("fplot running")
     if(!y_range){
     var ymin = f(x_range[0])
@@ -463,15 +466,11 @@ function fplot(x_range,y_range,n,f,FW = fW/cX,FH=fH/cY,FL=fX/cX,FB= 1 - fY/cY,Fr
         "y":y,
         "type":"line",
     }
-    plot(data,x_range,y_range,FW,FH,FL,FB,Frame)
+    plot(data,x_range,y_range,frame)
 }
-function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen=0,Frame_Width = fW/cX,Frame_Height=fH/cY,Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,frame=true){
+function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen=0,frame=false){
     xlim = x_range
     ylim = y_range
-    fW = Frame_Width * cX
-    fH = Frame_Height * cY
-    fX = Frame_Left * cX
-    fY = (1 - Frame_Bottom) * cY
     var m = data.x.length
     if(m !== data.y.length){
         print("incompatible arrays")
@@ -486,6 +485,11 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     c.beginPath()
     for(var i=0;i<m;i++){
         if(data.z){var z = (data.z[i][0]-z_eye)/(z_screen-z_eye)}
+        if(data.color){
+            c.stroke()
+            c.beginPath()
+            c.strokeStyle=data.color[i]
+        }
         GoTo(data.x[i][0]/z,data.y[i][0]/z)
         for(var j=1;j<n;j++){
             if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
@@ -495,6 +499,11 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     if(!contour){
     for(var j=0;j<n;j++){
         if(data.z){var z = (data.z[0][j]-z_eye)/(z_screen-z_eye)}
+        if(data.color){
+            c.stroke()
+            c.beginPath()
+            c.strokeStyle=data.color[j]
+        }
         GoTo(data.x[0][j]/z,data.y[0][j]/z)
         for(var i=1;i<m;i++){
             if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
@@ -503,16 +512,8 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     }
     }
     c.stroke()
-
-    if(frame){
-        c.strokeRect(fX,fY-fH,fW,fH)
-        var txt = `(${xlim[0]},${ylim[0]})`
-        GoTo(xlim[0],ylim[0])
-        c.fillText(txt,X-5*(txt.length),Y+20)
-        txt = `(${xlim[1]},${ylim[1]})`
-        GoTo(xlim[1],ylim[1])
-        c.fillText(txt,X,Y)
-    }
+    Remember()
+    if(frame){Frame()}
 }
 function RotM(A,W){
     return Matrix(RM(A,W))
@@ -584,7 +585,7 @@ function RM(A,W){
     }
     return M
 }
-function grid(m=10,n=10,type="3d"){
+function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
     m -= 1
     n -= 1
     if(type==="2d"){
@@ -593,8 +594,8 @@ function grid(m=10,n=10,type="3d"){
             var x = []
             var y = []
             for(var j=0;j<=n;j++){
-                x.push((j*xlim[1]+(n-j)*xlim[0])/n)
-                y.push((i*ylim[1]+(m-i)*ylim[0])/m)
+                x.push((j*x_range[1]+(n-j)*x_range[0])/n)
+                y.push((i*y_range[1]+(m-i)*y_range[0])/m)
             }
             data.x.push(x)
             data.y.push(y)
@@ -608,8 +609,8 @@ function grid(m=10,n=10,type="3d"){
             var y = []
             var z = []
             for(var j=0;j<=n;j++){
-                x.push((j*xlim[1]+(n-j)*xlim[0])/n)
-                y.push((i*ylim[1]+(m-i)*ylim[0])/m)
+                x.push((j*x_range[1]+(n-j)*x_range[0])/n)
+                y.push((i*y_range[1]+(m-i)*y_range[0])/m)
                 z.push(0)
             }
             data.x.push(x)
