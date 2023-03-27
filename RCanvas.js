@@ -39,11 +39,11 @@ var tempD = {}
 var dc = 'rgb(248, 249, 248)'
 var ac = 'rgb(172, 213, 193)'
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
-    if(bList["Eraser"].style.background==dc){
+    if(bList["Eraser"].style.background==ac){
+        g.lineWidth = c.lineWidth = ew = Eraser_width
+    } else {
         g.lineWidth = c.lineWidth = lw = Line_width
         g.lineWidth *= 3
-    } else {
-        g.lineWidth = c.lineWidth = ew = Eraser_width
     }
     c.lineCap = 'round'
     g.lineCap = 'round'
@@ -140,8 +140,10 @@ function funcAnim(f,n=100,T=5000,dt=false){
     if(!dt){
         dt = T/n
     }
+    disableButton("run")
     fa = setInterval(function(){
         if(n<=0){
+            enableButton("run")
             clearInterval(fa)
         }
         f();
@@ -742,20 +744,17 @@ function createButton(id,fun){
     document.body.appendChild(But)
     bList[id]=But
     But.onclick = fun
-    But.onload = function(){
     But.onmousemove = But.ontouchmove = function(e){
         if(md){e.preventDefault()}
-    }
-    But.style.background = dc
     }
 }
 for (var t in toggles){
     createButton(t,function(e){
         toggles[e.target.id]()
-        if(e.target.style.background==dc){
-            e.target.style.background=ac
-        } else {
+        if(e.target.style.background==ac){
             e.target.style.background=dc
+        } else {
+            e.target.style.background=ac
         }
         Remember()
     })
@@ -776,9 +775,6 @@ window.onresize=resize
 disableButton("undo")
 disableButton("redo")
 resize()
-if(!navigator.userAgent.match(/Android/i)){
-    bList["code"].click()   
-}
 for(var b in bList){
     im = new Image()
     bList[b].appendChild(im)
@@ -805,11 +801,14 @@ keys = {
     "+":"zIn",
     "-":"zOut",
 }
+I.value = "full();\nfingerDrawing = false"
+bList["draw"].click()
+if(!navigator.userAgent.match(/Android/i)){
+    bList["code"].click()   
+}
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
     if(e.key=="Escape"){esc();return;}
     bList[keys[e.key]].click()
     e.preventDefault()
 })
-I.value = "full();\n fingerDrawing = false"
-bList["draw"].click()
