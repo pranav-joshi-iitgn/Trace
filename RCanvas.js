@@ -38,7 +38,6 @@ var scale = 1
 var tempD = {}
 var dc = 'rgb(248, 249, 248)'
 var ac = 'rgb(172, 213, 193)'
-var cc = 'rgb(170, 200, 190)'
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(bList["Eraser"].style.background==dc){
         g.lineWidth = c.lineWidth = lw = Line_width
