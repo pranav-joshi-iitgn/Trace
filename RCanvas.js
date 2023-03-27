@@ -31,18 +31,16 @@ var fX = cX/2 + 30
 var fY = cY - 50
 var fW = cX/2  - 100
 var fH = cY - 100
-var isCreate=true
-var isFill=false
-var editor = false
 var fingerDrawing = true
 var Onion = false
 var bList = {}
 var scale = 1
 var tempD = {}
+var dc = 'rgb(248, 249, 248)'
+var ac = 'rgb(172, 213, 193)'
+var cc = 'rgb(170, 200, 190)'
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
-    if(isFill){
-        c.lineWidth = 0
-    } else if(isCreate){
+    if(bList["Eraser"].style.background==dc){
         g.lineWidth = c.lineWidth = lw = Line_width
         g.lineWidth *= 3
     } else {
@@ -163,26 +161,30 @@ function Del(n=currentSlide,howmany=1){
     slides.splice(n,howmany)
     load(slides.length)
 }
+function disableButton(b){
+    bList[b].style.opacity = 0.5
+    bList[b].disabled = true
+}
+function enableButton(b){
+    bList[b].style.opacity = 1
+    bList[b].disabled = false
+}
 function undo(){
-    if(currentStage==1){
-        bList["undo"].style.opacity = 0.5
+    if(currentStage<=1){
+        disableButton("undo")
     }
-    if(currentStage==0){return;}
     currentStage--
     put(stages[currentStage],0,0)
-    bList["redo"].style.opacity = 1
+    enableButton("undo")
 
 }
 function redo(){
-    if(currentStage==stages.length-2){
-        bList["redo"].style.opacity = 0.5
-    }
-    if(currentStage>=stages.length-1){
-        return;
+    if(currentStage>=stages.length-2){
+        disableButton("redo")
     }
     currentStage++
     put(stages[currentStage],0,0)
-    bList["undo"].style.opacity = 1
+    enableButton("undo")
 }
 function clear(ctx=c){
     ctx.clearRect(0,0,cX,cY)
@@ -351,8 +353,8 @@ function addStages(){
     for(var i=currentStage+1;i<stages.length;i++){
         delete stages[i]
     }
-    bList["undo"].style.opacity = 1
-    bList["redo"].style.opacity = 0.5
+    enableButton("undo")
+    disableButton("redo")
 }
 function mathPos(x,y){
     x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
@@ -622,24 +624,14 @@ function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
 
 }
 function Eraser(){
-    if(isCreate){
+    if(bList["Eraser"].style.background==dc){
         c.globalCompositeOperation = "destination-out";
     } else {
         c.globalCompositeOperation = "source-over"
     }
-    isCreate = !isCreate
-    Remember()
-}
-function DoF(){
-    if(isFill){
-        draw()
-    } else {
-        fill()
-    }
-    isFill = !isFill
 }
 function code(){
-    if(editor){
+    if(bList["code"].style.background == ac){
         resize(0)
         T.style.visibility = "hidden"
         I.style.visibility = "hidden"
@@ -648,7 +640,6 @@ function code(){
         T.style.visibility = "visible"
         I.style.visibility = "visible"
     }
-    editor = !editor
 }
 function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
@@ -677,6 +668,9 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
         }
     }
     put(stages[currentStage],0,0)
+    if(bList["Eraser"].style.background==ac){
+        c.globalCompositeOperation = "destination-out";
+    }
     Remember()
 }
 function Div(){
@@ -746,22 +740,25 @@ var buttonHigh = {
 function createButton(id,fun){
     var But = document.createElement("button")
     But.id = id
-    But.color = "#f8f9f8"
     document.body.appendChild(But)
     bList[id]=But
     But.onclick = fun
-    But.onmousemove = But.ontouchmove = function(e){e.preventDefault()}
+    But.onload = function(){
+    But.onmousemove = But.ontouchmove = function(e){
+        if(md){e.preventDefault()}
+    }
+    But.style.background = dc
+    }
 }
 for (var t in toggles){
     createButton(t,function(e){
         toggles[e.target.id]()
-        if(e.target.color=="#f8f9f8"){
-            e.target.style.background="#acd5c1"
-            e.target.color = "#acd5c1"
+        if(e.target.style.background==dc){
+            e.target.style.background=ac
         } else {
-            e.target.color = "#f8f9f8"
-            e.target.style.background="#f8f9f8"
+            e.target.style.background=dc
         }
+        Remember()
     })
 }
 for (var a in actions){
@@ -771,17 +768,17 @@ for (var m in modes){
     createButton(m,function(e){
         modes[e.target.id]()
         for(var m in modes){
-            bList[m].style.background="#f8f9f8"
+            bList[m].style.background=dc
         }
-        e.target.style.background="#acd5c1"
+        e.target.style.background=ac
     })
 }
 window.onresize=resize
-bList["undo"].style.opacity = 0.5
-bList["redo"].style.opacity = 0.5
+disableButton("undo")
+disableButton("redo")
 resize()
 if(!navigator.userAgent.match(/Android/i)){
-    bList.code.click()   
+    bList["code"].click()   
 }
 for(var b in bList){
     im = new Image()
@@ -810,10 +807,10 @@ keys = {
     "-":"zOut",
 }
 document.addEventListener("keydown",function(e){
-    if(editor){return;}
+    if(bList["code"].style.background==ac){return;}
     if(e.key=="Escape"){esc();return;}
     bList[keys[e.key]].click()
     e.preventDefault()
 })
 I.value = "full();\n fingerDrawing = false"
-bList.draw.click()
+bList["draw"].click()
