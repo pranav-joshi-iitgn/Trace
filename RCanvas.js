@@ -66,7 +66,9 @@ function load(n=currentSlide-1){
     } else {
         c.clearRect(0,0,cX,cY)
     }
+    currentStage = -1
     addStages()
+    disableButton("undo")
     T.value = `Slide ${n} from ${slides.length-1}`
     currentSlide = n
 }
@@ -76,7 +78,6 @@ function Last(){
         return;
     }
     load()
-    disableButton("undo")
 }
 function pdf(start=1,stop=slides.length-1){
     var doc = new jsPDF('l')
@@ -128,9 +129,7 @@ function save(n=currentSlide){
 }
 function Next(){
     currentSlide++
-    currentStage=-1
     load(currentSlide)
-    disableButton("undo")
 }
 function show(i=500){
     currentSlide = 0
@@ -159,6 +158,7 @@ function Copy(n=currentSlide){
     save()
     slides.push(slides[n])
     load(slides.length-1)
+
 }
 function insert(){
     slides.splice(currentSlide,0,snap())
@@ -192,12 +192,17 @@ function redo(){
     put(stages[currentStage],0,0)
     enableButton("undo")
 }
-function clear(ctx=c){
+function clear(ctx=c,fast=false){
     ctx.clearRect(0,0,cX,cY)
-    addStages()
+    if(!fast){
+        addStages()
+    }
 }
-function clrF(){
+function clrF(fast=false){
     c.clearRect(fX,fY-fH,fW,fH)
+    if(!fast){
+        addStages()
+    }
 }
 function run(){
     let s = I.value
@@ -205,10 +210,12 @@ function run(){
     eval(s);
     addStages()
 }
-function print(t){
+function print(t,log = true){
     if(typeof t !="string"){t = JSON.stringify(t)}
     T.value += t + "\n"
-    console.log(t)
+    if(log){
+        console.log(t)
+    }
 }
 function Dot(ctx=c,x=X,y=Y,size=false) {
     var l = ctx.lineWidth
@@ -348,7 +355,6 @@ can.ontouchmove = can.onmousemove = function(e){
     if(!getPos(e)){return;}
     if (md) { 
         c.moveTo(X,Y)
-        //Remember()
         g.fillRect(X0,Y0,X-X0,Y-Y0)
     }
 }
@@ -655,7 +661,7 @@ function more(){
         D.style.zIndex = 3
         D.style.visibility = "visible"
     }
-    for(var i in D.children){
+    for(var i=0;i<D.children.length;i++){
         var el = D.children[i]
         if(el){
             if((el.style)&&(el.style.zIndex > 0)){
@@ -718,6 +724,33 @@ function full(){
 }
 function esc(){
     document.exitFullscreen()
+}
+function Render(Pdf,pg=1){
+    if(pg>Pdf._pdfInfo.numPages){return;}
+    load(pg)
+    Pdf.getPage(pg).then(function(page){
+        var vp = page.getViewport({scale:1})
+        page.render({
+            canvasContext:c,
+            viewport:vp,
+        }).promise.then(function(){
+            save()
+            Render(Pdf,pg+1)
+        })
+    })
+}
+function Import(){
+    var file = In.files[0];
+    var fr = new FileReader();
+    fr.onload = function(){
+        var ta = new Uint8Array(this.result)
+        pdfjsLib.getDocument(ta).promise.then(pdf =>{
+            var l = pdf._pdfInfo.numPages
+            console.log("this file has " + l);
+            Render(pdf)
+        })
+    }
+    fr.readAsArrayBuffer(file)
 }
 var actions = {
     run,
@@ -835,6 +868,7 @@ FunKeys = {
     "p":pdf,
 }
 window.onresize=resize
+In.onchange = Import
 disableButton("undo")
 disableButton("redo")
 resize()
@@ -846,42 +880,4 @@ document.addEventListener("keydown",function(e){
     if(bList[ButKeys[e.key]]){bList[ButKeys[e.key]].click()}
     e.preventDefault()
 })
-function Render(Pdf,pg=1){
-    if(pg>Pdf._pdfInfo.numPages){return;}
-    load(pg)
-    Pdf.getPage(pg).then(function(page){
-        var vp = page.getViewport({scale:1})
-        page.render({
-            canvasContext:c,
-            viewport:vp,
-        }).promise.then(function(){
-            save()
-            Render(Pdf,pg+1)
-        })
-    })
-}
-In.onchange = function(e){
-    var file = e.target.files[0];
-    var fr = new FileReader();
-    fr.onload = function(){
-        //pdfjsLib.GlobalWorkerOptions.workerSrc ="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.7.570/build/pdf.worker.min.js";
-        var ta = new Uint8Array(this.result)
-        pdfjsLib.getDocument(ta).promise.then(pdf =>{
-            var l = pdf._pdfInfo.numPages
-            console.log("this file has " + l);
-            Render(pdf)
-            //for(var i=1;i<=l;i++){
-            //    load(i)
-            //    pdf.getPage(1).then(function(page){
-            //        var vp = page.getViewport({scale:1})
-            //        page.render({
-            //            canvasContext:c,
-            //            viewport:vp,
-            //        })
-            //    })
-            //    save()
-            //}
-        })
-    }
-    fr.readAsArrayBuffer(file)
-}
+
