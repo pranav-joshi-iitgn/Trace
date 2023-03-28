@@ -20,6 +20,10 @@
         button:active{
             background: rgb(172, 213, 193);
         }
+        label{
+            color: black;
+            font-size: large;
+        }
         .layer{
             position: absolute;
             top: 0;
@@ -33,7 +37,7 @@
         }
         .text{
             position: fixed;
-            z-index: 4;
+            z-index: 5;
             border: #22205c;
             border-radius: 10px;
             left:30px;
@@ -68,15 +72,21 @@
         }
         #D{
             position: fixed;
-            z-index: 3;
+            z-index: -2;
+            visibility: hidden;
             height: 100%;
-            left: 0;
             bottom: 0;
+            right:40%;
             background-color: antiquewhite;
         }
         
+        input{
+            border: 2px solid black;
+            border-radius: 10%;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.7.570/build/pdf.min.js"></script>
     </head>
 <body>
 <canvas id="C" class="layer"></canvas>
@@ -84,7 +94,11 @@
 <canvas id="O" class="layer"></canvas>
 <textarea type="text" id="I" class="text" placeholder="JS Code"></textarea>
 <textarea id="T" class="text" readonly placeholder="Output"></textarea>
-<div id="D"></div>
+<div id="D" class="text">
+    <label> Choose a PDF document to be uploaded : </label>
+    <input type="file" id="In">
+    <br>
+</div>
 </body>
 <script src="RCanvas.js"></script>
 </html>

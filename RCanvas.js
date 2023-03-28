@@ -4,6 +4,7 @@ const onion = document.getElementById("O")
 const I = document.getElementById("I")
 const T = document.getElementById("T")
 const D = document.getElementById("D")
+const In = document.getElementById('In')
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
 const o = onion.getContext('2d');
@@ -25,7 +26,7 @@ var Color = "black"
 var Font = "20px serif"
 var X0=0,Y0=0,X,Y
 var pathX,pathY
-var slides = []
+var slides = [c.getImageData(0,0,cX,cY)]
 var currentSlide = 1
 var fX = cX/2 + 30 
 var fY = cY - 50
@@ -66,7 +67,7 @@ function load(n=currentSlide-1){
         c.clearRect(0,0,cX,cY)
     }
     addStages()
-    T.value = `Slide ${n} from ${slides.length}`
+    T.value = `Slide ${n} from ${slides.length-1}`
     currentSlide = n
 }
 function Last(){
@@ -94,18 +95,20 @@ function save_locally(start=1,stop=slides.length-1){
         localStorage.setItem(i.toString(),img)
     }
 }
-function load_local(start,stop){
-    images = {}
-    load(start)
-    for(var i=start;i<=stop;i++){
-        images[i.toString()] = new Image()
-        images[i.toString()].onload = function(){
-            c.drawImage(images[i.toString()],0,0)
-            save()
-            Next()
-        }
-        images[i.toString()].src = localStorage.getItem(i.toString())
+function load_local(start=1,stop=localStorage.length){
+    if(start>stop){return;}
+    im = new Image()
+    im.onload = function(){
+        load(start)
+        c.drawImage(im,0,0)
+        save()
+        start++
+        load_local(start,stop)
     }
+    im.src = localStorage.getItem(start)
+}
+function delete_local(){
+    localStorage.clear()
 }
 function save(n=currentSlide){
     T.value = ""
@@ -642,6 +645,27 @@ function code(){
         I.style.visibility = "visible"
     }
 }
+function more(){
+    if(D.style.zIndex > 0){
+        D.style.zIndex = -2
+        D.style.visibility = "hidden"
+    } else {
+        D.style.zIndex = 3
+        D.style.visibility = "visible"
+    }
+    for(var i in D.children){
+        var el = D.children[i]
+        if(el){
+            if((el.style)&&(el.style.zIndex > 0)){
+                el.style.zIndex = -2
+                el.style.visibility = "hidden"
+            } else {
+                el.style.zIndex = 4
+                el.style.visibility = "visible"
+            } 
+        }   
+    }
+}
 function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
@@ -658,7 +682,7 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     stages[0] = snap()
     onion.width  = glass.width  = can.width  = cX
     onion.height = glass.height = can.height = cY
-    D.style.right = I.style.right = T.style.right = `${cW*100}%`
+    I.style.right = T.style.right = `${cW*100}%` //In.style.right = D.style.right = ..
     for (var b in buttonHigh){
         if(buttonHigh[b]){
             bList[b].style.top = `${Top}px`
@@ -673,13 +697,6 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
         c.globalCompositeOperation = "destination-out";
     }
     Remember()
-}
-function Div(){
-    if(D.style.zIndex == 3){
-        D.style.zIndex = 5
-    } else {
-        D.style.zIndex = 3
-    }    
 }
 function zIn(){
     scale += 1
@@ -771,10 +788,6 @@ for (var m in modes){
         e.target.style.background=ac
     })
 }
-window.onresize=resize
-disableButton("undo")
-disableButton("redo")
-resize()
 for(var b in bList){
     im = new Image()
     bList[b].appendChild(im)
@@ -786,9 +799,18 @@ for(var b in bList){
     im.src = "images/" + b + ".png"
     im.alt = bList[b].id
 }
-keys = {
-    "S":"save",
-    "D":"Del",
+for(var i =0;i<D.children.length;i++){
+    var el = D.children[i]
+    el.style.position = "absolute"
+    el.style.top = (i+1)*25 + "px"
+    el.style.zIndex = -2
+    el.style.visibility = "hidden"
+    el.style.left = "70px"
+    el.style.color = "black"
+}
+ButKeys = {
+    "s":"save",
+    "d":"Del",
     "c":"clear",
     "n":"Next",
     "l":"Last",
@@ -801,14 +823,63 @@ keys = {
     "+":"zIn",
     "-":"zOut",
 }
-I.value = "full();\nfingerDrawing = false"
+FunKeys = {
+    "Escape":esc,
+    "S":save_locally,
+    "L":load_local,
+    "D":delete_local,
+}
+window.onresize=resize
+disableButton("undo")
+disableButton("redo")
+resize()
+I.value = "full();\nfingerDrawing = false;\nmore()"
 bList["draw"].click()
 if(!navigator.userAgent.match(/Android/i)){
     bList["code"].click()   
 }
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
-    if(e.key=="Escape"){esc();return;}
-    bList[keys[e.key]].click()
+    if(FunKeys[e.key]){FunKeys[e.key]()}
+    if(bList[ButKeys[e.key]]){bList[ButKeys[e.key]].click()}
     e.preventDefault()
 })
+function Render(Pdf,pg=1){
+    if(pg>Pdf._pdfInfo.numPages){return;}
+    load(pg)
+    Pdf.getPage(pg).then(function(page){
+        var vp = page.getViewport({scale:1})
+        page.render({
+            canvasContext:c,
+            viewport:vp,
+        }).promise.then(function(){
+            save()
+            Render(Pdf,pg+1)
+        })
+    })
+}
+In.onchange = function(e){
+    var file = e.target.files[0];
+    var fr = new FileReader();
+    fr.onload = function(){
+        //pdfjsLib.GlobalWorkerOptions.workerSrc ="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.7.570/build/pdf.worker.min.js";
+        var ta = new Uint8Array(this.result)
+        pdfjsLib.getDocument(ta).promise.then(pdf =>{
+            var l = pdf._pdfInfo.numPages
+            console.log("this file has " + l);
+            Render(pdf)
+            //for(var i=1;i<=l;i++){
+            //    load(i)
+            //    pdf.getPage(1).then(function(page){
+            //        var vp = page.getViewport({scale:1})
+            //        page.render({
+            //            canvasContext:c,
+            //            viewport:vp,
+            //        })
+            //    })
+            //    save()
+            //}
+        })
+    }
+    fr.readAsArrayBuffer(file)
+}
