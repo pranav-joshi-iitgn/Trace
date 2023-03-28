@@ -76,6 +76,7 @@ function Last(){
         return;
     }
     load()
+    disableButton("undo")
 }
 function pdf(start=1,stop=slides.length-1){
     var doc = new jsPDF('l')
@@ -127,8 +128,9 @@ function save(n=currentSlide){
 }
 function Next(){
     currentSlide++
-    currentStage=0
+    currentStage=-1
     load(currentSlide)
+    disableButton("undo")
 }
 function show(i=500){
     currentSlide = 0
@@ -628,10 +630,10 @@ function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
 
 }
 function Eraser(){
-    if(bList["Eraser"].style.background==dc){
-        c.globalCompositeOperation = "destination-out";
-    } else {
+    if(bList["Eraser"].style.background==ac){
         c.globalCompositeOperation = "source-over"
+    } else {
+        c.globalCompositeOperation = "destination-out";
     }
 }
 function code(){
