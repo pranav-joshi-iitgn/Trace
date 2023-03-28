@@ -83,10 +83,10 @@ function pdf(start=1,stop=slides.length-1){
         load(i)
         img = can.toDataURL("image/png")
         doc.addImage(img,"PNG",10,10) 
-        if(i==stop){break;}
+        if(i>=stop){break;}
         doc.addPage()
     }
-    doc.save(`DrawingPad_${(new Date()).toString()}`)
+    doc.save(`Trace_${(new Date()).toString()}`)
 }
 function save_locally(start=1,stop=slides.length-1){
     for(var i=start;i<=stop;i++){
@@ -820,6 +820,7 @@ ButKeys = {
     "ArrowLeft":"undo",
     "ArrowRight":"redo",
     "R":"run",
+    "C":"code",
     "+":"zIn",
     "-":"zOut",
 }
@@ -828,6 +829,8 @@ FunKeys = {
     "S":save_locally,
     "L":load_local,
     "D":delete_local,
+    "m":more,
+    "p":pdf,
 }
 window.onresize=resize
 disableButton("undo")
@@ -835,9 +838,6 @@ disableButton("redo")
 resize()
 I.value = "full();\nfingerDrawing = false;\nmore()"
 bList["draw"].click()
-if(!navigator.userAgent.match(/Android/i)){
-    bList["code"].click()   
-}
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
     if(FunKeys[e.key]){FunKeys[e.key]()}
