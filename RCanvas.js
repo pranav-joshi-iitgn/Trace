@@ -179,7 +179,7 @@ function undo(){
     }
     currentStage--
     put(stages[currentStage],0,0)
-    enableButton("undo")
+    enableButton("redo")
 
 }
 function redo(){
