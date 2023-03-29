@@ -359,6 +359,13 @@ can.ontouchmove = can.onmousemove = function(e){
     }
 }
 }
+function Text(txt,x=X,y=Y){
+    c.fillText(txt,x,y)
+    var measure = c.measureText(txt)
+    var h = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+    Y = y + h*1.2
+    X = x
+}
 function addStages(){
     currentStage++
     stages[currentStage] = snap()
@@ -730,6 +737,13 @@ function Render(Pdf,pg=1){
     load(pg)
     Pdf.getPage(pg).then(function(page){
         var vp = page.getViewport({scale:1})
+        var w = cX/vp.width
+        var h = cY/vp.height
+        if(h<w){
+            vp = page.getViewport({scale:h})
+        } else {
+            vp = page.getViewport({scale:w})
+        }
         page.render({
             canvasContext:c,
             viewport:vp,
@@ -836,11 +850,11 @@ for(var b in bList){
 }
 for(var i =0;i<D.children.length;i++){
     var el = D.children[i]
-    el.style.position = "absolute"
-    el.style.top = (i+1)*25 + "px"
+    el.style.position = "relative"
+    el.style.top = "10px"
     el.style.zIndex = -2
     el.style.visibility = "hidden"
-    el.style.left = "70px"
+    el.style.left = "40px"
     el.style.color = "black"
 }
 ButKeys = {
