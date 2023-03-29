@@ -27,6 +27,7 @@ var Font = "20px serif"
 var X0=0,Y0=0,X,Y
 var pathX,pathY
 var slides = [c.getImageData(0,0,cX,cY)]
+var slideCodes = [""]
 var currentSlide = 1
 var fX = cX/2 + 30 
 var fY = cY - 50
@@ -63,13 +64,15 @@ function put(img,dx=0,dy=0,ctx = c){
 function load(n=currentSlide-1){
     if(slides[n]){
         put(slides[n],0,0)
+        I.value = slideCodes[n]
     } else {
         c.clearRect(0,0,cX,cY)
+        I.value = ""
     }
     currentStage = -1
     addStages()
     disableButton("undo")
-    T.value = `Slide ${n} from ${slides.length-1}`
+    T.value = `Slide ${n} from ${slides.length-1}\n`
     currentSlide = n
 }
 function Last(){
@@ -95,15 +98,18 @@ function save_locally(start=1,stop=slides.length-1){
         load(i)
         img = can.toDataURL("image/png")
         localStorage.setItem(i.toString(),img)
+        localStorage.setItem(`c${i}`,I.value)
     }
 }
-function load_local(start=1,stop=localStorage.length){
-    if(start>stop){return;}
-    im = new Image()
+function load_local(start=1,stop=Math.floor(localStorage.length/2)){
+    if(start>stop){load(stop);return;}
+    var im = new Image()
+    var txt = localStorage.getItem(`c${start}`)
     im.onload = function(){
         load(start)
         c.drawImage(im,0,0)
         save()
+        slideCodes[start] = txt
         start++
         load_local(start,stop)
     }
@@ -122,9 +128,10 @@ function save(n=currentSlide){
         print("Onion is off.")
     }
     if(n<=0){
-        print("Remember: By default, only slides with positive integer indices will be used to make pdf.")
+        print("Remember: Only slides with positive integer indices will saved/exported by default")
     }
     slides[n] = snap()
+    slideCodes[n] = I.value
     print(`Saved as slide no. ${n}`)
 }
 function Next(){
@@ -886,7 +893,7 @@ In.onchange = Import
 disableButton("undo")
 disableButton("redo")
 resize()
-I.value = "full();\nfingerDrawing = false;\nmore()"
+I.value = "full();\nfingerDrawing = false;\nmore();\nOnion=true"
 bList["draw"].click()
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
