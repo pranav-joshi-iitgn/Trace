@@ -195,10 +195,10 @@ function show(i=500){
 }
 /**
  * Function Animation
- * @param {*} f function to call
- * @param {*} n number of times function is called
- * @param {*} T duration for which animation runs
- * @param {*} dt interval between function calls
+ * @param {*} f list of functions to call
+ * @param {*} n list of number of times function is called
+ * @param {*} T list of durations for which animation runs
+ * @param {*} dt list of intervals between function calls
  */
 function funcAnim(f,n=[100],T=[5000],dt=[false],i=0){
     if(!dt[i]){
