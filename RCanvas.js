@@ -200,19 +200,24 @@ function show(i=500){
  * @param {*} T duration for which animation runs
  * @param {*} dt interval between function calls
  */
-function funcAnim(f,n=100,T=5000,dt=false){
-    if(!dt){
-        dt = T/n
+function funcAnim(f,n=[100],T=[5000],dt=[false],i=0){
+    if(!dt[i]){
+        dt[i] = T[i]/n[i]
     }
     disableButton("run")
     fa = setInterval(function(){
-        if(n<=0){
+        if(f[i]){
+            f[i]();
+        }
+        n[i]--;
+        if(n[i]<=0){
             enableButton("run")
             clearInterval(fa)
+            if(i<f.length-1){
+                funcAnim(f,n,T,dt,i+1)
+            }
         }
-        f();
-        n--;
-    },dt)
+    },dt[i])
 }
 function Copy(n=currentSlide){
     save()
