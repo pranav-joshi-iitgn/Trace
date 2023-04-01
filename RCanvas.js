@@ -15,7 +15,6 @@ var cX = innerWidth
 var cY = innerHeight
 var stages = [c.getImageData(0,0,cX,cY)]
 var currentStage = 0
-var fX,fY,fW,fH;
 var xlim = [0,100]
 var ylim = [0,100]
 var md = false
@@ -33,13 +32,21 @@ var fX = cX/2 + 30
 var fY = cY - 50
 var fW = cX/2  - 100
 var fH = cY - 100
-var fingerDrawing = true
-var Onion = false
-var bList = {}
-var scale = 1
+var fingerDrawing = true //If set to true, allows user to draw with finger (stylus input is not changed by this)
+var Onion = false //If set to true, enables the Onion mode
+var bList = {} //list that will contain buttons
+var scale = 1 //zoom
 var tempD = {}
-var dc = 'rgb(248, 249, 248)'
-var ac = 'rgb(172, 213, 193)'
+var dc = 'rgb(248, 249, 248)' //default color
+var ac = 'rgb(172, 213, 193)' //active color
+
+/**
+ * Changes global variables applies corresponding changes to html elements
+ * @param {*} color New value for variable Color
+ * @param {*} Line_width New value for variable lw
+ * @param {*} Eraser_width New value of variable ew
+ * @param {*} font New value of variable Font
+ */
 function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     if(bList["Eraser"].style.background==ac){
         g.lineWidth = c.lineWidth = ew = Eraser_width
@@ -55,12 +62,26 @@ function Remember(color=Color,Line_width=lw,Eraser_width=ew,font=Font){
     c.strokeStyle = Color = color
     c.font = Font = font
 }
+/**
+ * @returns A photo (ImageData) of the full active canvas 
+ */
 function snap(){
     return c.getImageData(0,0,cX,cY)
 }
+/**
+ * Puts ImageData on canvas
+ * @param {*} img ImageData to be put
+ * @param {*} dx X position of top left corner of image
+ * @param {*} dy Y position of top left corner of image
+ * @param {*} ctx context of canvas to put image on.
+ */
 function put(img,dx=0,dy=0,ctx = c){
     ctx.putImageData(img,dx,dy)
 }
+/**
+ * Loads a slide(ImageData) from the slides list and the corresponding code (string) from SlideCodes and saves the change in the stages list.
+ * @param {*} n Index of slide to be loaded
+ */
 function load(n=currentSlide-1){
     if(slides[n]){
         put(slides[n],0,0)
@@ -82,6 +103,11 @@ function Last(){
     }
     load()
 }
+/**
+ * Makes a pdf with slides on different pages.
+ * @param {*} start Starting slide's index
+ * @param {*} stop Last slide's index
+ */
 function pdf(start=1,stop=slides.length-1){
     var doc = new jsPDF('l')
     for(var i=start;;i++){
@@ -93,6 +119,11 @@ function pdf(start=1,stop=slides.length-1){
     }
     doc.save(`Trace_${(new Date()).toString()}`)
 }
+/**
+ * Saves (overwrites) the slides and codes to localStorage
+ * @param {*} start Starting slide
+ * @param {*} stop Last slide
+ */
 function save_locally(start=1,stop=slides.length-1){
     for(var i=start;i<=stop;i++){
         load(i)
@@ -101,6 +132,11 @@ function save_locally(start=1,stop=slides.length-1){
         localStorage.setItem(`c${i}`,I.value)
     }
 }
+/**
+ * Loads slides and codes from localStorage
+ * @param {*} start Starting slide
+ * @param {*} stop Last slide
+ */
 function load_local(start=1,stop=Math.floor(localStorage.length/2)){
     if(start>stop){load(stop);return;}
     var im = new Image()
@@ -115,9 +151,14 @@ function load_local(start=1,stop=Math.floor(localStorage.length/2)){
     }
     im.src = localStorage.getItem(start)
 }
+/**Clears the localStorage */
 function delete_local(){
     localStorage.clear()
 }
+/**
+ * Saves the slide and code associated with it in the slides and slideCodes array
+ * @param {*} n The slide to save
+ */
 function save(n=currentSlide){
     T.value = ""
     if(Onion){
@@ -134,10 +175,15 @@ function save(n=currentSlide){
     slideCodes[n] = I.value
     print(`Saved as slide no. ${n}`)
 }
+/**Next slide (and code)*/
 function Next(){
     currentSlide++
     load(currentSlide)
 }
+/**
+ * Does a slide show
+ * @param {*} i The duration of each slide (in ms)
+ */
 function show(i=500){
     currentSlide = 0
     ss = setInterval(function(){
@@ -147,6 +193,13 @@ function show(i=500){
         }
     },i)
 }
+/**
+ * Function Animation
+ * @param {*} f function to call
+ * @param {*} n number of times function is called
+ * @param {*} T duration for which animation runs
+ * @param {*} dt interval between function calls
+ */
 function funcAnim(f,n=100,T=5000,dt=false){
     if(!dt){
         dt = T/n
@@ -164,14 +217,22 @@ function funcAnim(f,n=100,T=5000,dt=false){
 function Copy(n=currentSlide){
     save()
     slides.push(slides[n])
+    slideCodes.push(slideCodes[n])
     load(slides.length-1)
 
 }
+/** saves current stage of canvas to a slide inserted next to current slide */
 function insert(){
     slides.splice(currentSlide,0,snap())
+    slideCodes.splice(currentSlide,0,I.value)
 }
+/**
+ * Deletes slides
+ * @param {*} n first slide to delete
+ */
 function Del(n=currentSlide,howmany=1){
     slides.splice(n,howmany)
+    slideCodes.splice(n,howmany)
     load(slides.length)
 }
 function disableButton(b){
@@ -199,12 +260,21 @@ function redo(){
     put(stages[currentStage],0,0)
     enableButton("undo")
 }
+/**
+ * Clears the canvas
+ * @param {*} ctx context of canvas to clear
+ * @param {*} fast set true in case of animation
+ */
 function clear(ctx=c,fast=false){
     ctx.clearRect(0,0,cX,cY)
     if(!fast){
         addStages()
     }
 }
+/**
+ * Clears the frame given by the fX,fY,fH,fW values
+ * @param {*} fast Set true in case of animation to improve performance
+ */
 function clrF(fast=false){
     c.clearRect(fX,fY-fH,fW,fH)
     if(!fast){
@@ -224,6 +294,13 @@ function print(t,log = true){
         console.log(t)
     }
 }
+/**
+ * Fills a circle (dot)
+ * @param {*} ctx context of canvas 
+ * @param {*} x x coordinate of center of dot
+ * @param {*} y y coordinate of center of dot
+ * @param {*} size radius of dot
+ */
 function Dot(ctx=c,x=X,y=Y,size=false) {
     var l = ctx.lineWidth
     if(size===false){
@@ -236,6 +313,11 @@ function Dot(ctx=c,x=X,y=Y,size=false) {
     ctx.fill();
     ctx.lineWidth = l
 }
+/**
+ * Updates the pointer position (X,Y) based on mouse or touch event
+ * @param {*} e Event
+ * @returns False if event is not of interest
+ */
 function getPos(e) {
     if (e.touches) {
         if(e.touches.length > 1){return false}
@@ -267,6 +349,7 @@ function getPos(e) {
     }
     return true
 }
+/** Switch to free-hand drawing*/
 function draw(){
 if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
@@ -340,6 +423,7 @@ can.ontouchmove=function(){}
 window.ontouchend=function(){}
 }
 }
+/** Switch to rectangle fill */
 function fill(){
 can.ontouchstart = can.onmousedown = function(e) {
     if(!getPos(e)){return;}
@@ -366,6 +450,12 @@ can.ontouchmove = can.onmousemove = function(e){
     }
 }
 }
+/**
+ * Puts text. If called after another Text(), puts text below previous text.
+ * @param {*} txt Text to be put on canvas
+ * @param {*} x Position of text's left edge
+ * @param {*} y Position of text's baseline
+ */
 function Text(txt,x=X,y=Y){
     c.fillText(txt,x,y)
     var measure = c.measureText(txt)
@@ -382,7 +472,8 @@ function addStages(){
     enableButton("undo")
     disableButton("redo")
 }
-function mathPos(x,y){
+/**Converts the position of a point (x,y) as seen in the frame, to position as seen in the canvas  */
+function realPos(x,y){
     x = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
     y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
     return {
@@ -390,16 +481,19 @@ function mathPos(x,y){
     'Y' : y
     }
 }
+/**Similar to c.moveTo but uses position as seen in frame*/
 function GoTo(x,y){
     X = fX + (fW*(x-xlim[0])/(xlim[1]-xlim[0]))
     Y = fY - (fH*(y-ylim[0])/(ylim[1]-ylim[0]))
     c.moveTo(X,Y)
 }
+/**Similar to c.lineTo but uses position as seen in frame */
 function LineTo(x,y){
     X = fX + (fW*(x-xlim[0])/(xlim[1]-xlim[0]))
     Y = fY - (fH*(y-ylim[0])/(ylim[1]-ylim[0]))
     c.lineTo(X,Y)
 }
+/**Similar to c.strokeRect but uses position as seen in frame */
 function Rect(x,y,w,h){
     X = fX + fW*(x-xlim[0])/(xlim[1]-xlim[0])
     Y = fY - fH*(y-ylim[0])/(ylim[1]-ylim[0])
@@ -411,10 +505,13 @@ function point(x,y){
     GoTo(x,y)
     Dot()
 }
-function text(txt,x,y){
-    GoTo(x,y)
-    c.fillText(txt,X,Y)
-}
+/**
+ * 2D plots
+ * @param {*} data object with x,y properties being arrays of coordinates of points
+ * @param {*} x_range [x_low,x_high] The x values shown at edges of frame
+ * @param {*} y_range [y_low,y_high] The y values shown at edges of frame
+ * @param {*} frame If true, draws the frame
+ */
 function plot(data,x_range=xlim,y_range=ylim,frame=false){
     xlim = x_range
     ylim = y_range
@@ -458,6 +555,13 @@ function plot(data,x_range=xlim,y_range=ylim,frame=false){
     Remember()
     if(frame){Frame()}
 }
+/**
+ * Draws the frame
+ * @param {*} Frame_Left fraction of cX
+ * @param {*} Frame_Bottom fraction of cY
+ * @param {*} Frame_Width fraction of cX
+ * @param {*} Frame_Height fraction of cY
+ */
 function Frame(Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,Frame_Width = fW/cX,Frame_Height=fH/cY){
     fW = Frame_Width * cX
     fH = Frame_Height * cY
@@ -471,6 +575,14 @@ function Frame(Frame_Left=fX/cX,Frame_Bottom= 1 - fY/cY,Frame_Width = fW/cX,Fram
     GoTo(xlim[1],ylim[1])
     c.fillText(txt,X,Y)
 }
+/**
+ * Plots a single variable, single valued function
+ * @param {*} x_range [x_low,x_high] The x values shown at edges of frame
+ * @param {*} y_range [y_low,y_high] The y values shown at edges of frame
+ * @param {*} frame If true, draws the frame
+ * @param {*} n number of samples to take 
+ * @param {*} f function to plot
+ */
 function fplot(x_range,y_range,n,f,frame=false){
     print("fplot running")
     if(!y_range){
@@ -496,6 +608,16 @@ function fplot(x_range,y_range,n,f,frame=false){
     }
     plot(data,x_range,y_range,frame)
 }
+/**
+ * Plots a 3D mesh
+ * @param {*} data object with x,y properties being nested arrays of coordinates of points
+ * @param {*} contour if true, draws the rows only, otherwise draws the columns too.
+ * @param {*} x_range [x_low,x_high] : range of x values of points ON THE SCREEN
+ * @param {*} y_range [y_low,y_high] : range of y values of points ON THE SCREEN
+ * @param {*} z_eye z coordinate of your eye
+ * @param {*} z_screen z coordinate of screen
+ * @param {*} frame if true, draws frame
+ */
 function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen=0,frame=false){
     xlim = x_range
     ylim = y_range
@@ -543,9 +665,19 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     Remember()
     if(frame){Frame()}
 }
+/**
+ * @param {*} A Angle of rotation (radians)
+ * @param {*} W Axis of rotation (x,y,z). Not specifying axis will make the z axis the axis of rotation
+ * @returns Transfomation function
+ */
 function RotM(A,W){
     return Matrix(RM(A,W))
 }
+/**
+ * Transforms a "data" object using a function
+ * @param {*} data mesh or line 
+ * @param {*} f Transformation function that takes in array arr and index i and alters the value of arr[i]
+ */
 function Transform(data,f){
     for(var i=0;i<data.x.length;i++){
         if(typeof(data.x[i])==='object'){
@@ -562,6 +694,11 @@ function Transform(data,f){
         }
 }
 }
+/**
+ * Converts a matrix into a transformation function
+ * @param {*} M The matrix to be used
+ * @returns A Transformation function
+ */
 function Matrix(M){
     return (function(data,i){
         if(M.length===2){
@@ -583,6 +720,11 @@ function Matrix(M){
         }
     })
 }
+/**
+ * @param {*} A Angle of rotation (in radians)
+ * @param {*} W Axis about which rotation should happen (x,y,z)
+ * @returns A 3D or 2D rotation matrix
+ */
 function RM(A,W){
     var cA = Math.cos(A)
     var sA = Math.sin(A) 
@@ -613,6 +755,15 @@ function RM(A,W){
     }
     return M
 }
+/**
+ * Creates a grid (mesh)
+ * @param {*} m number of rows
+ * @param {*} n number of collumns
+ * @param {*} x_range [x_low, x_high] : The x values between which grid is confined
+ * @param {*} y_range [y_low, y_high] : The y values between which grid is confined
+ * @param {*} type "2d" or "3d"
+ * @returns An object with x,y properties containing the nested arrays of x coordinates and y coordinates of points
+ */
 function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
     m -= 1
     n -= 1
@@ -649,6 +800,9 @@ function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
     }
 
 }
+/**
+ * Toggle eraser mode
+ */
 function Eraser(){
     if(bList["Eraser"].style.background==ac){
         c.globalCompositeOperation = "source-over"
@@ -656,6 +810,9 @@ function Eraser(){
         c.globalCompositeOperation = "destination-out";
     }
 }
+/**
+ * Shows or hides the code area
+ */
 function code(){
     if(bList["code"].style.background == ac){
         resize(0)
@@ -667,6 +824,9 @@ function code(){
         I.style.visibility = "visible"
     }
 }
+/**
+ * Shows or hides the "more" page
+ */
 function more(){
     if(D.style.zIndex > 0){
         D.style.zIndex = -2
@@ -688,6 +848,13 @@ function more(){
         }   
     }
 }
+/**
+ * Tweaks the layout
+ * @param {*} s Fraction of window width taken by code area
+ * @param {*} Top Topmost position in button layout
+ * @param {*} Bottom Bottom position in button layout
+ * @param {*} canResize If true, defaults the zoom on resize
+ */
 function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     cW = 1-s
     stages[currentStage] = snap()
@@ -720,25 +887,33 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     }
     Remember()
 }
+/**Zoom In*/
 function zIn(){
     scale += 1
     can.style.transform = `scale(${scale},${scale})`
     glass.style.transform = `scale(${scale},${scale})`
 
 }
+/** Zoom Out*/
 function zOut(){
     if(scale==1){return;}
     scale -= 1
     can.style.transform = `scale(${scale},${scale})`
     glass.style.transform = `scale(${scale},${scale})`
-
 }
+/**Enters full screen */
 function full(){
     document.documentElement.requestFullscreen()
 }
+/**Exits full screen */
 function esc(){
     document.exitFullscreen()
 }
+/**
+ * Recursively renders pdf pages on canvas
+ * @param {*} Pdf The pdf handle
+ * @param {*} pg Page no.
+ */
 function Render(Pdf,pg=1){
     if(pg>Pdf._pdfInfo.numPages){return;}
     load(pg)
@@ -760,6 +935,7 @@ function Render(Pdf,pg=1){
         })
     })
 }
+/**Import a PDF document*/
 function Import(){
     var file = In.files[0];
     var fr = new FileReader();
@@ -773,6 +949,7 @@ function Import(){
     }
     fr.readAsArrayBuffer(file)
 }
+//functions that perform an action
 var actions = {
     run,
     Del,
@@ -785,14 +962,17 @@ var actions = {
     zIn,
     zOut,
 }
+//functions that work as toggles
 var toggles = {
     code,
     Eraser,
 }
+//functions that change the mode of interaction with canvas
 var modes = {
     draw,
     fill,
 }
+//List of booleans telling if a certain button belongs to the upper section (in layout) or not
 var buttonHigh = {
     
     zIn:true,
@@ -811,6 +991,10 @@ var buttonHigh = {
     Next:false,
     Last:false,
 }
+/**
+ * @param {*} id Id of button
+ * @param {*} fun function to assign to button
+ */
 function createButton(id,fun){
     var But = document.createElement("button")
     But.id = id
@@ -821,6 +1005,7 @@ function createButton(id,fun){
         if(md){e.preventDefault()}
     }
 }
+//Creating toggle buttons
 for (var t in toggles){
     createButton(t,function(e){
         toggles[e.target.id]()
@@ -832,9 +1017,11 @@ for (var t in toggles){
         Remember()
     })
 }
+//Creating action buttons
 for (var a in actions){
     createButton(a,function(e){actions[e.target.id]()})
 }
+//Creating mode change buttons (these work as radio buttons)
 for (var m in modes){
     createButton(m,function(e){
         modes[e.target.id]()
@@ -844,6 +1031,7 @@ for (var m in modes){
         e.target.style.background=ac
     })
 }
+//Button icons
 for(var b in bList){
     im = new Image()
     bList[b].appendChild(im)
@@ -855,6 +1043,7 @@ for(var b in bList){
     im.src = "images/" + b + ".png"
     im.alt = bList[b].id
 }
+//Styling elements in "more" page
 for(var i =0;i<D.children.length;i++){
     var el = D.children[i]
     el.style.position = "relative"
@@ -864,6 +1053,7 @@ for(var i =0;i<D.children.length;i++){
     el.style.left = "40px"
     el.style.color = "black"
 }
+//Keyboard keys that are mapped to buttons
 ButKeys = {
     "s":"save",
     "d":"Del",
@@ -880,6 +1070,7 @@ ButKeys = {
     "+":"zIn",
     "-":"zOut",
 }
+//Keyboard keys that are mapped to functions
 FunKeys = {
     "Escape":esc,
     "S":save_locally,
@@ -890,11 +1081,13 @@ FunKeys = {
 }
 window.onresize=resize
 In.onchange = Import
+//Initializing 
 disableButton("undo")
 disableButton("redo")
 resize()
 I.value = "full();\nfingerDrawing = false;\nmore();\nOnion=true"
 bList["draw"].click()
+//Keydown events
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
     if(FunKeys[e.key]){FunKeys[e.key]()}
