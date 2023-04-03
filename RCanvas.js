@@ -1,3 +1,7 @@
+const opqt = "\u201C"
+const clqt = "\u201D"
+const and = "\u0026"
+const neq = "\u2260"
 const can = document.getElementById("C")
 const glass = document.getElementById("G")
 const onion = document.getElementById("O")
@@ -1096,7 +1100,14 @@ bList["draw"].click()
 document.addEventListener("keydown",function(e){
     if(bList["code"].style.background==ac){return;}
     if(FunKeys[e.key]){FunKeys[e.key]()}
+    if(e.key=="Tab"){e.preventDefault()}
     if(bList[ButKeys[e.key]]){bList[ButKeys[e.key]].click()}
     e.preventDefault()
 })
+I.onkeydown = function(e){if(e.key=="Tab"){
+    e.preventDefault()
+    var x = I.value
+    curPos = I.selectionStart
+    I.value = x.slice(0, curPos) + "\t" + x.slice(curPos);
+}}
 
