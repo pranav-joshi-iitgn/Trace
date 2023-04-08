@@ -2,6 +2,12 @@ const opqt = "\u201C"
 const clqt = "\u201D"
 const and = "\u0026"
 const neq = "\u2260"
+const alpha = "\u03B1"
+const beta = "\u03B2"
+const gamma = "\u03B3"
+const Gamma = "\u0393"
+const Theta = "\u0398"
+const SUM = "\u03A3"
 const can = document.getElementById("C")
 const glass = document.getElementById("G")
 const onion = document.getElementById("O")
@@ -536,9 +542,9 @@ function plot(data,x_range=xlim,y_range=ylim,frame=false){
             for(var i=0;i<n;i++){
                 GoTo(data.x[i],data.y[i])
                 if(data.color){c.fillStyle=data.color[i]}
-                Dot()
+                if(data.r){Dot(c,X,Y,data.r[i])}
+                else{Dot()}
             }
-            c.stroke()
             break;
 
         case "bar":
