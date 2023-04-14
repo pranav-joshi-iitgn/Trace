@@ -964,6 +964,18 @@ function Import(){
     }
     fr.readAsArrayBuffer(file)
 }
+function Mutation(MData,m,useData=false){
+    return function(IData,i){
+        if(useData){m=IData.m}
+        IData.x[i] = (1-m)*IData.x[i] + m*MData.x[i]
+        if(IData.y){
+            IData.y[i] = (1-m)*IData.y[i] + m*MData.y[i]
+        }
+        if(IData.z){
+            IData.z[i] = (1-m)*IData.z[i] + m*MData.z[i]
+        }
+    }
+}
 //functions that perform an action
 var actions = {
     run,
