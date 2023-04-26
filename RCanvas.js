@@ -15,6 +15,7 @@ const I = document.getElementById("I")
 const T = document.getElementById("T")
 const D = document.getElementById("D")
 const In = document.getElementById('In')
+const Coord = document.getElementById('Coord')
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
 const o = onion.getContext('2d');
@@ -49,7 +50,9 @@ var scale = 1 //zoom
 var tempD = {}
 var dc = 'rgb(248, 249, 248)' //default color
 var ac = 'rgb(172, 213, 193)' //active color
-
+var selected = null
+var selH = 0
+var selW = 0
 /**
  * Changes global variables applies corresponding changes to html elements
  * @param {*} color New value for variable Color
@@ -465,6 +468,59 @@ can.ontouchmove = can.onmousemove = function(e){
     }
 }
 }
+function putSelected(){
+    can.ontouchstart = can.onmousedown = function(e) {
+        if(!getPos(e)){return;}
+        md=true;
+        e.preventDefault()
+    }
+    window.ontouchend = window.onmouseup = function(e){
+        if(md){
+        getPos(e)
+        g.clearRect(0,0,cX,cY)
+        c.putImageData(selected,X,Y)
+
+        addStages()
+        }
+        md=false;
+    }
+    can.ontouchmove = can.onmousemove = function(e){ 
+        g.clearRect(X,Y,selW,selH)
+        if(!getPos(e)){return;}
+        if (md) { 
+            c.moveTo(X,Y)
+            g.fillRect(X,Y,selW,selH)
+        }
+    }
+    }
+function select(){
+    can.ontouchstart = can.onmousedown = function(e) {
+        if(!getPos(e)){return;}
+        md=true;
+        X0 = X
+        Y0 = Y
+        e.preventDefault()
+    }
+    window.ontouchend = window.onmouseup = function(e){
+        if(md){
+        getPos(e)
+        selW = X-X0
+        selH = Y-Y0
+        selected = c.getImageData(X0,Y0,selW,selH)
+        g.clearRect(0,0,cX,cY)
+        addStages()
+        }
+        md=false;
+    }
+    can.ontouchmove = can.onmousemove = function(e){ 
+        g.clearRect(X0,Y0,X-X0,Y-Y0)
+        if(!getPos(e)){return;}
+        if (md) { 
+            c.moveTo(X,Y)
+            g.fillRect(X0,Y0,X-X0,Y-Y0)
+        }
+    }
+}
 /**
  * Puts text. If called after another Text(), puts text below previous text.
  * @param {*} txt Text to be put on canvas
@@ -636,6 +692,11 @@ function fplot(x_range,y_range,n,f,frame=false){
 function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen=0,frame=false){
     xlim = x_range
     ylim = y_range
+    if(data.x==undefined){
+        print("You have put a data without x array. \n Assuming data is array of more data objects")
+        for(var i=0;i<data.length;i++){meshPlot(data[i])}
+        return;
+    }
     var m = data.x.length
     if(m !== data.y.length){
         print("incompatible arrays")
@@ -656,9 +717,15 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
             c.strokeStyle=data.color[i]
         }
         GoTo(data.x[i][0]/z,data.y[i][0]/z)
+        if(data.type=="scatter"){Dot(c,X,Y,lw/(2*z))}
         for(var j=1;j<n;j++){
             if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
-            LineTo(data.x[i][j]/z,data.y[i][j]/z)
+            if(data.type=="scatter"){
+                GoTo(data.x[i][j]/z,data.y[i][j]/z)
+                Dot(c,X,Y,lw/(2*z))
+            } else {
+                LineTo(data.x[i][j]/z,data.y[i][j]/z)
+            }
         }
     }
     if(!contour){
@@ -670,9 +737,15 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
             c.strokeStyle=data.color[j]
         }
         GoTo(data.x[0][j]/z,data.y[0][j]/z)
+        if(data.type=="scatter"){Dot(c,X,Y,lw/(2*z))}
         for(var i=1;i<m;i++){
             if(data.z){z = (data.z[i][j]-z_eye)/(z_screen-z_eye)}
-            LineTo(data.x[i][j]/z,data.y[i][j]/z)
+            if(data.type=="scatter"){
+                GoTo(data.x[i][j]/z,data.y[i][j]/z)
+                Dot(c,X,Y,lw/(2*z))
+            } else {
+                LineTo(data.x[i][j]/z,data.y[i][j]/z)
+            }
         }
     }
     }
@@ -1107,6 +1180,10 @@ FunKeys = {
     "p":pdf,
 }
 window.onresize=resize
+window.onpointermove=function(e){
+    getPos(e);
+    Coord.innerText = `X:${X},Y:${Y}`;
+}
 In.onchange = Import
 //Initializing 
 disableButton("undo")
