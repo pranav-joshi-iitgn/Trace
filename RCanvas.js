@@ -15,6 +15,7 @@ const I = document.getElementById("I")
 const T = document.getElementById("T")
 const D = document.getElementById("D")
 const In = document.getElementById('In')
+const Im = document.getElementById('Im')
 const Coord = document.getElementById('Coord')
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
@@ -53,6 +54,7 @@ var ac = 'rgb(172, 213, 193)' //active color
 var selected = null
 var selH = 0
 var selW = 0
+var TXT = ''
 /**
  * Changes global variables applies corresponding changes to html elements
  * @param {*} color New value for variable Color
@@ -365,6 +367,7 @@ function getPos(e) {
         X = e.layerX;
         Y = e.layerY;
     }
+    Coord.innerText = `X:${X},Y:${Y}`;
     return true
 }
 /** Switch to free-hand drawing*/
@@ -442,35 +445,45 @@ window.ontouchend=function(){}
 }
 }
 /** Switch to rectangle fill */
-function fill(){
+function fill(im=false){
 can.ontouchstart = can.onmousedown = function(e) {
     if(!getPos(e)){return;}
     md=true;
     X0 = X
     Y0 = Y
+    W = 0
+    H = 0
     e.preventDefault()
 }
 window.ontouchend = window.onmouseup = function(e){
     if(md){
     getPos(e)
-    c.fillRect(X0,Y0,X-X0,Y-Y0)
+    if(im){
+        c.drawImage(im,X0,Y0,W,H)
+    } else {
+        c.fillRect(X0,Y0,W,H)
+    }
     g.clearRect(0,0,cX,cY)
     addStages()
     }
     md=false;
 }
 can.ontouchmove = can.onmousemove = function(e){ 
-    g.clearRect(X0,Y0,X-X0,Y-Y0)
+    g.clearRect(X0,Y0,W,H)
     if(!getPos(e)){return;}
+    W = X-X0
+    H = Y-Y0
     if (md) { 
         c.moveTo(X,Y)
-        g.fillRect(X0,Y0,X-X0,Y-Y0)
+        g.fillRect(X0,Y0,W,H)
     }
 }
 }
 function putSelected(){
     can.ontouchstart = can.onmousedown = function(e) {
         if(!getPos(e)){return;}
+        X0 = X
+        Y0 = Y
         md=true;
         e.preventDefault()
     }
@@ -479,20 +492,96 @@ function putSelected(){
         getPos(e)
         g.clearRect(0,0,cX,cY)
         c.putImageData(selected,X,Y)
-
         addStages()
         }
         md=false;
     }
     can.ontouchmove = can.onmousemove = function(e){ 
-        g.clearRect(X,Y,selW,selH)
+        g.clearRect(X0,Y0,selW,selH)
         if(!getPos(e)){return;}
+        X0 = X
+        Y0 = Y
         if (md) { 
-            c.moveTo(X,Y)
-            g.fillRect(X,Y,selW,selH)
+            c.moveTo(X0,Y0)
+            g.fillRect(X0,Y0,selW,selH)
         }
     }
+}
+/**
+ * Puts text. If called after another text(), puts text below previous text.
+ * @param {*} txt Text to be put on canvas
+ * @param {*} x Position of text's left edge
+ * @param {*} y Position of text's baseline
+ */
+function text(txt,x=X,y=Y){
+    var measure = c.measureText(txt)
+    var h = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+    y += measure.actualBoundingBoxAscent
+    var lines = getLines(txt)
+    for(var i=0; i<lines.length;i++){
+        c.fillText(lines[i],x,y)
+        y += h
     }
+}
+function getLines(txt){
+    var measure = c.measureText(txt)
+    var h = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
+    var w = 0
+    var neww = 0
+    var lines = txt.split('\n')
+    for(var i=0;i<lines.length;i++){
+        neww = c.measureText(lines[i]).width
+        if(neww>w){
+            w = neww
+        }
+    }
+    h = h * lines.length
+    lines.w = w
+    lines.h = h
+    return lines
+}
+function putText(){
+    can.ontouchstart = can.onmousedown = function(e) {
+        if(!getPos(e)){return;}
+        X0 = X
+        Y0 = Y
+        lines = getLines(TXT)
+        selH = lines.h
+        selW = lines.w
+        md=true;
+        e.preventDefault()
+    }
+    window.ontouchend = window.onmouseup = function(e){
+        if(md){
+        getPos(e)
+        g.clearRect(0,0,cX,cY)
+        //c.fillText(TXT,X0,Y0+measure.actualBoundingBoxAscent)
+        text(TXT,X0,Y0)
+        addStages()
+        }
+        md=false;
+    }
+    can.ontouchmove = can.onmousemove = function(e){ 
+        g.clearRect(X0,Y0,selW,selH)
+        if(!getPos(e)){return;}
+        X0 = X
+        Y0 = Y
+        if (md) { 
+            c.moveTo(X0,Y0)
+            g.fillRect(X0,Y0,selW,selH)
+        }
+    }
+}
+document.getElementById("Color").onchange = function(e){
+    Color = e.target.value
+    Remember()
+}
+document.getElementById("LineWidth").onchange = function(e){
+    lw = e.target.value
+    print(lw)
+    Remember()
+}
+
 function select(){
     can.ontouchstart = can.onmousedown = function(e) {
         if(!getPos(e)){return;}
@@ -520,19 +609,6 @@ function select(){
             g.fillRect(X0,Y0,X-X0,Y-Y0)
         }
     }
-}
-/**
- * Puts text. If called after another Text(), puts text below previous text.
- * @param {*} txt Text to be put on canvas
- * @param {*} x Position of text's left edge
- * @param {*} y Position of text's baseline
- */
-function Text(txt,x=X,y=Y){
-    c.fillText(txt,x,y)
-    var measure = c.measureText(txt)
-    var h = measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
-    Y = y + h*1.2
-    X = x
 }
 function addStages(){
     currentStage++
@@ -1105,6 +1181,12 @@ function createButton(id,fun){
         if(md){e.preventDefault()}
     }
 }
+Im.onchange = function(e){
+    im = new Image()
+    im.src = URL.createObjectURL(e.target.files[0])
+    bList['fill'].click()
+    fill(im)
+}
 //Creating toggle buttons
 for (var t in toggles){
     createButton(t,function(e){
@@ -1178,11 +1260,12 @@ FunKeys = {
     "D":delete_local,
     "m":more,
     "p":pdf,
+    ".":function(){lw*=1.2;Remember()},
+    ",":function(){lw*=0.8;Remember()},
 }
 window.onresize=resize
 window.onpointermove=function(e){
     getPos(e);
-    Coord.innerText = `X:${X},Y:${Y}`;
 }
 In.onchange = Import
 //Initializing 
