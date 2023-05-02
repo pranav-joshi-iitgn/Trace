@@ -8,6 +8,60 @@ const gamma = "\u03B3"
 const Gamma = "\u0393"
 const Theta = "\u0398"
 const SUM = "\u03A3"
+const supdig = {
+    '0':'\u2070',
+    '1':'\u2071',
+    '2':'\u00B2',
+    '3':'\u00B3',
+    '4':'\u2074',
+    '5':'\u2075',
+    '6':'\u2076',
+    '7':'\u2077',
+    '8':'\u2078',
+    '9':'\u2079',
+    '+':'\u207A',
+    '-':'\u207B',
+    '=':'\u207C',
+    '(':'\u207D',
+    ')':'\u207E',
+    'i':'\u2071',
+    'n':'\u207F',
+}
+const subdig = {
+    '0':'\u2080',
+    '1':'\u2081',
+    '2':'\u2082',
+    '3':'\u2083',
+    '4':'\u2084',
+    '5':'\u2085',
+    '6':'\u2086',
+    '7':'\u2087',
+    '8':'\u2088',
+    '9':'\u2089',
+    '+':'\u208A',
+    '-':'\u208B',
+    '=':'\u208C',
+    '(':'\u208D',
+    ')':'\u208E',
+}
+function sup(num){
+    var txt = num.toString()
+    var newtxt = ''
+    for(var i=0;i<txt.length;i++){
+        char = txt[i]
+        newtxt += supdig[char]
+    }
+    return newtxt
+}
+function sub(num){
+    var txt = num.toString()
+    var newtxt = ''
+    for(var i=0;i<txt.length;i++){
+        char = txt[i]
+        newtxt += subdig[char]
+    }
+    return newtxt
+}
 const can = document.getElementById("C")
 const glass = document.getElementById("G")
 const onion = document.getElementById("O")
@@ -54,7 +108,6 @@ var ac = 'rgb(172, 213, 193)' //active color
 var selected = null
 var selH = 0
 var selW = 0
-var TXT = ''
 /**
  * Changes global variables applies corresponding changes to html elements
  * @param {*} color New value for variable Color
@@ -446,6 +499,9 @@ window.ontouchend=function(){}
 }
 /** Switch to rectangle fill */
 function fill(im=false){
+if(!im){
+    Im.value = null;
+}
 can.ontouchstart = can.onmousedown = function(e) {
     if(!getPos(e)){return;}
     md=true;
@@ -545,7 +601,7 @@ function putText(){
         if(!getPos(e)){return;}
         X0 = X
         Y0 = Y
-        lines = getLines(TXT)
+        lines = getLines(T.value)
         selH = lines.h
         selW = lines.w
         md=true;
@@ -555,8 +611,7 @@ function putText(){
         if(md){
         getPos(e)
         g.clearRect(0,0,cX,cY)
-        //c.fillText(TXT,X0,Y0+measure.actualBoundingBoxAscent)
-        text(TXT,X0,Y0)
+        text(T.value,X0,Y0)
         addStages()
         }
         md=false;
@@ -574,6 +629,7 @@ function putText(){
 }
 document.getElementById("Color").onchange = function(e){
     Color = e.target.value
+    e.target.style.background = Color
     Remember()
 }
 document.getElementById("LineWidth").onchange = function(e){
@@ -581,7 +637,6 @@ document.getElementById("LineWidth").onchange = function(e){
     print(lw)
     Remember()
 }
-
 function select(){
     can.ontouchstart = can.onmousedown = function(e) {
         if(!getPos(e)){return;}
@@ -1183,9 +1238,13 @@ function createButton(id,fun){
 }
 Im.onchange = function(e){
     im = new Image()
-    im.src = URL.createObjectURL(e.target.files[0])
-    bList['fill'].click()
-    fill(im)
+    if(e.target.files[0]){
+        im.src = URL.createObjectURL(e.target.files[0])
+        fill(im)
+        for(var m in modes){
+            bList[m].style.background=dc
+        }
+    }
 }
 //Creating toggle buttons
 for (var t in toggles){
@@ -1262,6 +1321,7 @@ FunKeys = {
     "p":pdf,
     ".":function(){lw*=1.2;Remember()},
     ",":function(){lw*=0.8;Remember()},
+    'o':function(){Onion=!Onion;clear(g)}
 }
 window.onresize=resize
 window.onpointermove=function(e){

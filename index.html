@@ -74,13 +74,24 @@
             visibility: hidden;
             height: 100%;
             bottom: 0;
-            right:45%;
             background-color: rgb(236, 229, 235);
             left: 0;
+            right: 50%;
         }
         input{
             border: 2px solid rgb(188, 227, 17);
             border-radius: 10%;
+        }
+        textarea{
+            color: azure;
+        }
+        textarea:focus{
+            color: white;
+        }
+        #Color{
+            border-radius: 40%;
+            background-color: black;
+            padding: 20px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
@@ -91,21 +102,24 @@
 <canvas id="G" class="layer"></canvas>
 <canvas id="O" class="layer"></canvas>
 <textarea type="text" id="I" class="text" placeholder="JS Code"></textarea>
-<textarea id="T" class="text" readonly placeholder="Output"></textarea>
+<textarea id="T" class="text" placeholder="Output"></textarea>
 <div id="D" class="text">
     <label> Choose a PDF document to be uploaded : </label>
     <input type="file" id="In">
+    <br><br>
+    <label> Coordinates : </label> 
     <br>
-    <label> Coordinates : </label>
     <label id="Coord"> Coordinates </label>
-    <br>
+    <br><br>
     <label> Choose an Image to be uploaded : </label>
     <input type="file" id="Im">
+    <br><br>
+    <label> Set line width : </label>
+    <input type="range" min=0.1 max=100 id="LineWidth" value="2">
     <br>
     <label> Choose color : </label>
     <input type="color" id="Color">
-    <label> Set line width : </label>
-    <input type="range" min=0.1 max=100 id="LineWidth">
+    <br><br>
 </div>
 </body>
 <script src="RCanvas.js"></script>
