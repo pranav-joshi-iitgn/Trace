@@ -103,6 +103,7 @@ var Onion = false //If set to true, enables the Onion mode
 var bList = {} //list that will contain buttons
 var scale = 1 //zoom
 var tempD = {}
+var tempD2 = {}
 var dc = 'rgb(248, 249, 248)' //default color
 var ac = 'rgb(172, 213, 193)' //active color
 var selected = null
@@ -828,15 +829,22 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
         for(var i=0;i<data.length;i++){meshPlot(data[i])}
         return;
     }
-    var m = data.x.length
-    if(m !== data.y.length){
-        print("incompatible arrays")
-        return;
-    }
-    var n = data.x[0].length
-    if(n !== data.y[0].length){
-        print("incompatible arrays")
-        return;
+    if(data.x.tolist){data.x = data.x.tolist()}
+    if(data.y.tolist){data.y = data.y.tolist()}
+    if(data.z && data.z.tolist){data.z = data.z.tolist()}
+    if(data.x.shape){
+        if(data.x.shape!=data.y.shape){
+            print("incompatible arrays")
+        }
+    } else {
+        var m = data.x.length
+        if(m !== data.y.length){
+            print("incompatible arrays")
+        }
+        var n = data.x[0].length
+        if(n !== data.y[0].length){
+            print("incompatible arrays")
+        }
     }
     var z = 1
     c.beginPath()
@@ -1019,6 +1027,92 @@ function grid(m=10,n=10,x_range=xlim,y_range=ylim,type="3d"){
     }
 
 }
+function matshow(M,x0=X,y0=Y,opt={}){
+    var def = {
+        num:true,
+        lin:false,
+        brac:true,
+        shade:true,
+        high:1,
+        low:0,
+    }
+    for(var option in def){
+        if(opt[option]==undefined){
+            opt[option] = def[option]
+        }
+    }
+    var m = M.length
+    var n = M[0].length
+    var w = 0
+    var h = 0
+    var x = x0
+    var y = y0
+    var space = c.measureText(" ").width
+    for(var i=0;i<m;i++){
+        for(var j=0;j<n;j++){
+            var lines = getLines(M[i][j].toString())
+            if(lines.w + 2*space > w){
+                w = lines.w + 2*space
+            }
+            if(lines.h + 2*space > h){
+                h = lines.h + 2*space
+            }
+        }
+    }
+    y = y0
+    for(var i=0;i<m;i++){
+        x = x0
+        for(var j=0;j<n;j++){
+            var val = 255*(M[i][j]-opt.low)/(opt.high-opt.low)
+            if(opt.shade){
+                c.fillStyle = `rgb(${255-val},${255-val},${255-val})`
+                c.fillRect(x,y,w,h)
+                c.fillStyle=`rgb(${val},${val},${val})`
+            }
+            if(opt.num){
+                text(M[i][j].toString(),x+space,y+space)
+            }
+            x += w
+        }
+        y += h
+    }
+    if(opt.lin){
+    c.beginPath()
+    y = y0
+    for(var i=0;i<m+1;i++){
+        c.moveTo(x0,y)
+        c.lineTo(x0+w*n,y)
+        y += h
+    }
+    x = x0
+    for(var i=0;i<n+1;i++){
+        c.moveTo(x,y0)
+        c.lineTo(x,y0+h*m)
+        x += w
+    }
+    c.stroke()
+    }
+    if(opt.brac){
+    c.beginPath()
+
+    c.moveTo(x0,y0)
+    c.lineTo(x0,y0+m*h)
+    c.moveTo(x0 + w*n,y0)
+    c.lineTo(x0 + w*n,y0+m*h)
+
+    c.moveTo(x0,y0)
+    c.lineTo(x0+w/2,y0)
+    c.moveTo(x0+n*w,y0)
+    c.lineTo(x0+n*w-w/2,y0)
+
+    c.moveTo(x0,y0+m*h)
+    c.lineTo(x0+w/2,y0+m*h)
+    c.moveTo(x0+n*w,y0+m*h)
+    c.lineTo(x0+n*w-w/2,y0+m*h)
+
+    c.stroke()
+    }
+}
 /**
  * Toggle eraser mode
  */
@@ -1168,15 +1262,33 @@ function Import(){
     }
     fr.readAsArrayBuffer(file)
 }
-function Mutation(MData,m,useData=false){
-    return function(IData,i){
-        if(useData){m=IData.m}
-        IData.x[i] = (1-m)*IData.x[i] + m*MData.x[i]
-        if(IData.y){
-            IData.y[i] = (1-m)*IData.y[i] + m*MData.y[i]
+function Mutate(data,data2,f){
+    for(var i=0;i<data.x.length;i++){
+        if(typeof(data.x[i])==='object'){
+            tempD.x = data.x[i]
+            tempD2.x = data2.x[i]
+            if(data.y){
+                tempD.y = data.y[i]
+                tempD2.y = data2.y[i]
+            }
+            if(data.z){
+                tempD.z = data.z[i]
+                tempD2.z = data2.z[i]
+            }
+            Mutate(tempD,tempD2,f)
+        } else {
+            f(data,data2,i)
         }
-        if(IData.z){
-            IData.z[i] = (1-m)*IData.z[i] + m*MData.z[i]
+}
+}
+function LinMut(m){
+    return function(data,data2,i){
+        data.x[i] = m*data2.x[i] + (1-m)*data.x[i]
+        if(data.y){
+            data.y[i] = m*data2.y[i] + (1-m)*data.y[i]
+        }
+        if(data.z){
+            data.z[i] = m*data2.z[i] + (1-m)*data.z[i]
         }
     }
 }
