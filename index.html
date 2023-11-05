@@ -40,13 +40,16 @@
 
         }
         #C{
+            position: absolute;
             z-index: 1;
-            
+            right: 0;
         }
         #G{
+            position: absolute;
             z-index: 2;
             pointer-events: none;
             opacity: 0.2;
+            right: 0;
         }
         #O{
             z-index: 0;
@@ -54,12 +57,18 @@
             opacity: 0.2;
             background-color:white;
         }
+        #Type{
+            position: absolute;
+            top: 0;
+            height: 5%;
+            left: 30px;
+            background-color:black;
+        }
         #I{
             background-color:#041e33;
-            top: 0;
-            height: 80%;
+            top: 5%;
+            bottom: 20%;
             left:30px;
-
         }
         #T{
             background-color: black;
@@ -67,6 +76,14 @@
             bottom:0;
             height: 20%;
             left:30px;
+        }
+        #BackG{
+            position: absolute;
+            height: 100%;
+            right: 0;
+            z-index: -2;
+            top: 0;
+            left: 50%;
         }
         #D{
             position: fixed;
@@ -94,6 +111,9 @@
             padding: 20px;
         }
     </style>
+    <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.7.570/build/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/nicolaspanel/numjs@0.15.1/dist/numjs.min.js"></script>    
@@ -102,11 +122,19 @@
 <canvas id="C" class="layer"></canvas>
 <canvas id="G" class="layer"></canvas>
 <canvas id="O" class="layer"></canvas>
-<textarea type="text" id="I" class="text" placeholder="JS Code"></textarea>
+<select type="text" id="Type" class="text" value="JS">
+    <option>JS</option>
+    <option>LaTeX</option>
+</select>
 <textarea id="T" class="text" placeholder="Output"></textarea>
+<textarea type="text" id="I" class="text" placeholder="JS or LaTeX Code"></textarea>
+<div id="BackG"> $$ Some complicated equation $$ </div>
 <div id="D" class="text">
     <label> Choose a PDF document to be uploaded : </label>
     <input type="file" id="In">
+    <br><br>
+    <label> Choose the codes to be uploaded : </label>
+    <input type="file" id="InC">
     <br><br>
     <label> Coordinates : </label> 
     <br>

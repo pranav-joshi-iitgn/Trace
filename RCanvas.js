@@ -65,16 +65,19 @@ function sub(num){
 const can = document.getElementById("C")
 const glass = document.getElementById("G")
 const onion = document.getElementById("O")
+const Type = document.getElementById("Type")
 const I = document.getElementById("I")
 const T = document.getElementById("T")
 const D = document.getElementById("D")
 const In = document.getElementById('In')
+const InC = document.getElementById('InC')
 const Im = document.getElementById('Im')
 const Coord = document.getElementById('Coord')
 const c = can.getContext("2d")
 const g = glass.getContext('2d');
 const o = onion.getContext('2d');
 const rect = can.getBoundingClientRect()
+const LtX = document.getElementById("BackG")
 var cW = 1
 var cH = 1
 var cX = innerWidth
@@ -187,6 +190,36 @@ function pdf(start=1,stop=slides.length-1){
         doc.addPage()
     }
     doc.save(`Trace_${(new Date()).toString()}`)
+}
+function write(){
+    var S = ""
+    for(var s in slideCodes){
+        S += slideCodes[s] + "\n\n\n\n"
+    }
+    // Create element with <a> tag
+    const link = document.createElement("a");
+    // Create a blog object with the file content which you want to add to the file
+    const file = new Blob([S], { type: 'text/plain' });
+    // Add file content in the object URL
+    link.href = URL.createObjectURL(file);
+    //// Add file name
+    link.download = `Trace_${(new Date()).toString()}_Codes.txt`;
+    //// Add click event to <a> tag to save file.
+    link.click();
+    URL.revokeObjectURL(link.href);
+    delete link;
+}
+function read(){
+    var file = InC.files[0];
+    var fr = new FileReader();
+    fr.onload = function(e){
+        var S = e.target.result
+        var L = S.split("\n\n\n");
+        for(var i=0;i<L.length;i++){
+            slideCodes[i] = L[i]
+        }
+    }
+    fr.readAsText(file)
 }
 /**
  * Saves (overwrites) the slides and codes to localStorage
@@ -356,10 +389,14 @@ function clrF(fast=false){
     }
 }
 function run(){
-    let s = I.value
-    T.value = ""
-    eval(s);
-    addStages()
+    if(Type.value=="JS"){
+        let s = I.value
+        T.value = ""
+        eval(s);
+        addStages()
+    } else if(Type.value=="LaTeX"){
+        runLatex()
+    }
 }
 function print(t,log = true){
     if(typeof t !="string"){t = JSON.stringify(t)}
@@ -631,6 +668,10 @@ function putText(){
             g.fillRect(X0,Y0,selW,selH)
         }
     }
+}
+function runLatex(){
+    LtX.innerText = I.value
+    MathJax.typeset()
 }
 document.getElementById("Color").onchange = function(e){
     Color = e.target.value
@@ -1156,10 +1197,12 @@ function code(){
         resize(0)
         T.style.visibility = "hidden"
         I.style.visibility = "hidden"
+        Type.style.visibility = "hidden"
     } else {
         resize(0.5)
         T.style.visibility = "visible"
         I.style.visibility = "visible"
+        Type.style.visibility = "visible"
     }
 }
 /**
@@ -1209,7 +1252,7 @@ function resize(s=1-cW,Top=0,Bottom=0,canResize=false){
     stages[0] = snap()
     onion.width  = glass.width  = can.width  = cX
     onion.height = glass.height = can.height = cY
-    I.style.right = T.style.right = `${cW*100}%` //In.style.right = D.style.right = ..
+    I.style.right = T.style.right = Type.style.right= `${cW*100}%` 
     for (var b in buttonHigh){
         if(buttonHigh[b]){
             bList[b].style.top = `${Top}px`
@@ -1281,7 +1324,7 @@ function Import(){
         var ta = new Uint8Array(this.result)
         pdfjsLib.getDocument(ta).promise.then(pdf =>{
             var l = pdf._pdfInfo.numPages
-            console.log("this file has " + l);
+            console.log("this file has " + l + "pages");
             Render(pdf)
         })
     }
@@ -1373,16 +1416,6 @@ function createButton(id,fun){
         if(md){e.preventDefault()}
     }
 }
-Im.onchange = function(e){
-    im = new Image()
-    if(e.target.files[0]){
-        im.src = URL.createObjectURL(e.target.files[0])
-        fill(im)
-        for(var m in modes){
-            bList[m].style.background=dc
-        }
-    }
-}
 //Creating toggle buttons
 for (var t in toggles){
     createButton(t,function(e){
@@ -1465,6 +1498,17 @@ window.onpointermove=function(e){
     getPos(e);
 }
 In.onchange = Import
+InC.onchange = read
+Im.onchange = function(e){
+    im = new Image()
+    if(e.target.files[0]){
+        im.src = URL.createObjectURL(e.target.files[0])
+        fill(im)
+        for(var m in modes){
+            bList[m].style.background=dc
+        }
+    }
+}
 //Initializing 
 disableButton("undo")
 disableButton("redo")
