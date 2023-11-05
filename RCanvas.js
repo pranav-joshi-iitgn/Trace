@@ -393,7 +393,9 @@ function Dot(ctx=c,x=X,y=Y,size=false) {
  * @returns False if event is not of interest
  */
 function getPos(e) {
+    var toret = 0;
     if (e.touches) {
+        toret = 2;
         if(e.touches.length > 1){return false}
         if (e.touches.length == 1) { // Only deal with one finger
             var touch = e.touches[0]; // Get the information for finger #1
@@ -402,6 +404,7 @@ function getPos(e) {
         }
     }
     else if (e.offsetX) {
+        toret = 1;
         //console.log("offset")
         //console.log(e.offsetX + "," + e.offsetY)
         //console.log("layerX,layerY")
@@ -412,6 +415,7 @@ function getPos(e) {
         Y = e.offsetY;
     }
     else if (e.layerX) {
+        toret = 1;
         //console.log("layerX,layerY")
         //console.log(e.layerX + "," + e.layerY)
         //console.log("offset")
@@ -422,15 +426,15 @@ function getPos(e) {
         Y = e.layerY;
     }
     Coord.innerText = `X:${X},Y:${Y}`;
-    return true
+    return toret
 }
 /** Switch to free-hand drawing*/
 function draw(){
-if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
+//if(navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPad/i)){
 //Touch
 can.ontouchstart = function(e) {
+    if(getPos(e)!=2){return;}
     if(e.touches[0].radiusX>0 && !fingerDrawing){return;}
-    if(!getPos(e)){return;}
     md = true
     pathX=[];
     pathY=[];
@@ -440,7 +444,7 @@ can.ontouchstart = function(e) {
     e.preventDefault();
 }
 can.ontouchmove = function(e) { 
-    if(!getPos(e)){return;};
+    if(getPos(e)!=2){return;};
     if(!md){return;}
     Dot(g,X,Y); 
     pathX.push(X)
@@ -460,12 +464,12 @@ window.ontouchend = function(){
     clear(g)
     }
     md = false
-}} else {
+}//} else {
 //mouse
 can.onmousedown = function(e) {
     if(e.button===2){return;}
+    if(getPos(e)!=1){return;}
     md=true;
-    getPos(e)
     c.beginPath()
     c.moveTo(X,Y)
     g.beginPath()
@@ -481,7 +485,7 @@ window.onmouseup = function(){
 }
 can.onmousemove = function(e){ 
     //Remember()
-    getPos(e);
+    if(getPos(e)!=1){return}
     if (md) { 
         c.lineTo(X,Y) 
         c.stroke()
@@ -493,10 +497,10 @@ can.onmousemove = function(e){
         g.moveTo(X,Y)
     }
 }
-can.ontouchstart= function(){}
-can.ontouchmove=function(){}
-window.ontouchend=function(){}
-}
+//can.ontouchstart= function(){}
+//can.ontouchmove=function(){}
+//window.ontouchend=function(){}
+//}
 }
 /** Switch to rectangle fill */
 function fill(im=false){
@@ -851,9 +855,11 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     for(var i=0;i<m;i++){
         if(data.z){var z = (data.z[i][0]-z_eye)/(z_screen-z_eye)}
         if(data.color){
-            c.stroke()
+            if(data.type!='scatter'){
+                c.stroke()
+            }
             c.beginPath()
-            c.strokeStyle=data.color[i]
+            c.fillStyle=data.color[i]
         }
         GoTo(data.x[i][0]/z,data.y[i][0]/z)
         if(data.type=="scatter"){Dot(c,X,Y,lw/(2*z))}
@@ -871,9 +877,11 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
     for(var j=0;j<n;j++){
         if(data.z){var z = (data.z[0][j]-z_eye)/(z_screen-z_eye)}
         if(data.color){
-            c.stroke()
+            if(data.type!='scatter'){
+                c.stroke()
+            }
             c.beginPath()
-            c.strokeStyle=data.color[j]
+            c.fillStyle=data.color[i]
         }
         GoTo(data.x[0][j]/z,data.y[0][j]/z)
         if(data.type=="scatter"){Dot(c,X,Y,lw/(2*z))}
@@ -888,7 +896,9 @@ function meshPlot(data,contour=false,x_range=xlim,y_range=ylim,z_eye=-1,z_screen
         }
     }
     }
-    c.stroke()
+    if(data.type!='scatter'){
+        c.stroke()
+    }
     Remember()
     if(frame){Frame()}
 }
@@ -905,7 +915,8 @@ function RotM(A,W){
  * @param {*} data mesh or line 
  * @param {*} f Transformation function that takes in array arr and index i and alters the value of arr[i]
  */
-function Transform(data,f){
+function Transform(data,f,use=false){
+    if(!use){
     for(var i=0;i<data.x.length;i++){
         if(typeof(data.x[i])==='object'){
             tempD.x = data.x[i]
@@ -919,7 +930,26 @@ function Transform(data,f){
         } else {
             f(data,i)
         }
-}
+    }
+    }else{
+        for(var i=0;i<data.x.length;i++){
+            if(typeof(data.x[i])==='object'){
+                tempD.x = data.x[i]
+                tempD2.x = use.x[i]
+                if(data.y){
+                    tempD.y = data.y[i]
+                    tempD2.y = use.y[i]
+                }
+                if(data.z){
+                    tempD.z = data.z[i]
+                    tempD2.z = use.z[i]
+                }
+                Transform(tempD,f,tempD2)
+            } else {
+                f(data,i,use)
+            }
+        }
+    }
 }
 /**
  * Converts a matrix into a transformation function
@@ -927,23 +957,18 @@ function Transform(data,f){
  * @returns A Transformation function
  */
 function Matrix(M){
-    return (function(data,i){
+    return (function(data,i,use=false){
+        if(!use){use=data}
+        var x = use.x[i]
+        var y = use.y[i]
         if(M.length===2){
-            //for(var i=0;i<data.x.length;i++){
-                var x = data.x[i]
-                var y = data.y[i]
                 data.x[i] = M[0][0]*x + M[0][1]*y
                 data.y[i] = M[1][0]*x + M[1][1]*y
-            //}
         } else {
-            //for(var i=0;i<data.x.length;i++){
-                var x = data.x[i]
-                var y = data.y[i]
-                var z = data.z[i]
+                var z = use.z[i]
                 data.x[i] = M[0][0]*x + M[0][1]*y + M[0][2]*z
                 data.y[i] = M[1][0]*x + M[1][1]*y + M[1][2]*z
                 data.z[i] = M[2][0]*x + M[2][1]*y + M[2][2]*z
-            //}
         }
     })
 }
