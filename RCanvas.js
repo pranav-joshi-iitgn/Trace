@@ -392,7 +392,8 @@ function run(){
     if(Type.value=="JS"){
         let s = I.value
         T.value = ""
-        eval(s);
+        try {eval(s)}
+        catch(e){T.value = e}
         addStages()
     } else if(Type.value=="LaTeX"){
         runLatex()
@@ -1529,4 +1530,3 @@ I.onkeydown = function(e){if(e.key=="Tab"){
     curPos = I.selectionStart
     I.value = x.slice(0, curPos) + "\t" + x.slice(curPos);
 }}
-
