@@ -1,13 +1,13 @@
-const opqt = "\u201C"
-const clqt = "\u201D"
-const and = "\u0026"
-const neq = "\u2260"
-const alpha = "\u03B1"
-const beta = "\u03B2"
-const gamma = "\u03B3"
-const Gamma = "\u0393"
-const Theta = "\u0398"
-const SUM = "\u03A3"
+let opqt = "\u201C"
+let clqt = "\u201D"
+let and = "\u0026"
+let neq = "\u2260"
+let alpha = "\u03B1"
+let beta = "\u03B2"
+let gamma = "\u03B3"
+let Gamma = "\u0393"
+let Theta = "\u0398"
+let SUM = "\u03A3"
 const supdig = {
     '0':'\u2070',
     '1':'\u2071',
