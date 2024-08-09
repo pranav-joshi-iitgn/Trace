@@ -502,6 +502,8 @@ window.ontouchend = function(){
     clear(g)
     }
     md = false
+    console.log(pathX)
+    console.log(pathY)
 }//} else {
 //mouse
 can.onmousedown = function(e) {
